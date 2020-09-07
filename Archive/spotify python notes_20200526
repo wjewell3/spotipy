@@ -1,0 +1,412 @@
+#spotify data download
+#run the following in Terminal before continuing
+# export SPOTIPY_CLIENT_ID='49b756e678ec420c9bbcd5f1c7d9db98'
+# export SPOTIPY_CLIENT_SECRET='3d4e82d8a4254a0daf1201d9823b7ddc'
+# export SPOTIPY_REDIRECT_URI='http://google.com/'
+pred_like_playlist_name = "PredLike7"
+
+import os
+import sys
+import json
+import spotipy
+import webbrowser
+import spotipy.util as util
+from json.decoder import JSONDecodeError
+import requests
+import math
+import time
+import pandas as pd
+from IPython.display import display
+from pandas.io.json import json_normalize
+import sklearn
+from sklearn.cluster import KMeans 
+from sklearn import metrics 
+from scipy.spatial.distance import cdist 
+import numpy as np 
+import matplotlib.pyplot as plt  
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.utils import resample
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+import lightgbm as lgb
+from lightgbm import LGBMClassifier
+import shap
+import xgboost as xgb
+from sklearn.neighbors import KNeighborsClassifier
+from xgboost import XGBClassifier
+from bayes_opt import BayesianOptimization
+from sklearn.model_selection import cross_val_score
+
+
+username = "1254636534"
+scope = '''
+playlist-modify-private 
+playlist-modify-public 
+playlist-read-collaborative 
+playlist-read-private
+user-follow-modify 
+user-follow-read 
+user-library-modify 
+user-library-read 
+user-modify-playback-state 
+user-read-currently-playing 
+user-read-email 
+user-read-playback-state 
+user-read-private 
+user-read-recently-played 
+user-top-read''' #   
+
+# Erase cache and prompt for user permission
+try:
+    token = util.prompt_for_user_token(username, scope) # add scope
+except (AttributeError, JSONDecodeError):
+    os.remove(f".cache-{username}")
+    token = util.prompt_for_user_token(username, scope) # add scope
+
+# Create our spotify object with permissions
+spotifyObject = spotipy.Spotify(auth=token)
+
+user = spotifyObject.current_user()
+sp = spotifyObject
+
+#########################################################################
+#https://vsupalov.com/analyze-spotify-music-library-with-jupyter-pandas/
+
+# get count of Liked Songs (i.e. Hearted)
+url = "https://api.spotify.com/v1/me/tracks"
+headers = {'Authorization': "Bearer {}".format(token)}
+r = requests.get(url, headers=headers)
+parsed = json.loads(r.text)
+all_songs = []
+count_songs = parsed["total"]
+
+# get raw data for Liked Songs
+for i in range(int(math.ceil(count_songs/50.0))):
+    offset = 50*i
+    url = "https://api.spotify.com/v1/me/tracks?limit=50&offset={}".format(offset)
+    headers = {'Authorization': "Bearer {}".format(token)}
+    r = requests.get(url, headers=headers)
+    parsed = json.loads(r.text)
+    all_songs.extend(parsed["items"])
+
+# parse out data from Liked Songs' raw data
+def song_metadata(all_songs):
+    df1 = pd.DataFrame(columns = ['album','artist','track','url','popularity','added_at','release_date','uri'])
+    for i in range(0, len(all_songs)):
+        album = all_songs[i]['track']['album']['name']
+        artist = all_songs[i]['track']['album']['artists'][0]['name']
+        track = all_songs[i]['track']['name']
+        url = all_songs[i]['track']['external_urls']['spotify']
+        popularity = all_songs[i]['track']['popularity']
+        added_at = all_songs[i]['added_at']
+        release_date = all_songs[i]['track']['album']['release_date']
+        uri = all_songs[i]['track']['uri']
+        df1 = df1.append(pd.DataFrame([[album, artist, track, url, popularity, added_at, release_date, uri]], columns = ['album','artist','track','url','popularity','added_at','release_date','uri']))
+    df1 = df1.reset_index()
+    del df1['index']
+    df1.set_index('uri', inplace=True)
+    song_list = []
+    for i in range(0, len(all_songs)):
+        song_list.append(all_songs[i]['track']['uri'])
+    df2 = pd.DataFrame()
+    for i in range(0,math.ceil(len(song_list)/100)):
+    	features = sp.audio_features(song_list[(i)*100:100*(i+1)])
+    	df2 = df2.append(pd.DataFrame(features))
+    df2.set_index('uri', inplace=True)
+    df3 = df1.merge(df2, on = 'uri')
+    return df3
+
+# put Liked Songs data into dataframe
+like = pd.DataFrame()
+like = song_metadata(all_songs)
+
+# get playlist raw data
+playlists_raw = sp.current_user_playlists()
+
+# get uris and song counts for playlists
+def get_playlist_uris(playlists_raw):
+    df = pd.DataFrame()
+    for i in range(0, len(playlists_raw)):
+        playlist = playlists_raw['items'][i]['name']
+        playlist_uri = playlists_raw['items'][i]['uri']
+        song_count = playlists_raw['items'][i]['tracks']['total']
+        df = df.append(pd.DataFrame([[playlist, playlist_uri, song_count]], columns = ['playlist','playlist_uri','song_count']))
+    df.set_index(['playlist'], inplace=True)
+    return df
+
+playlists_df = get_playlist_uris(playlists_raw)
+display(playlists_df)
+
+# get uri and song count for Dislikes playlist
+uri =  playlists_df.loc['Dislikes']['playlist_uri']
+song_count =  playlists_df.loc['Dislikes']['song_count']
+
+# extract data from Disliked songs
+dislike_raw = []
+for i in range(int(math.ceil(song_count/100.0))):
+    dislike_raw.extend(sp.user_playlist_tracks(uri.split(':')[1], uri.split(':')[2], offset=i*100)['items'])
+
+dislike = pd.DataFrame()
+dislike = song_metadata(dislike_raw)
+
+# combine liked and disliked songs into my_songs dataframe with "Liked" flag
+like['Liked'] = 1
+dislike['Liked'] = 0
+
+my_songs = pd.concat([like,dislike])
+my_songs.to_csv(r'/Users/Will/Documents/Spotipy/my_songs.csv')
+
+
+
+# get public songs data from csv's
+public_songs1 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-00s.csv') 
+public_songs2 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-10s.csv') 
+public_songs3 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-60s.csv') 
+public_songs4 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-70s.csv') 
+public_songs5 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-80s.csv') 
+public_songs6 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-90s.csv') 
+#public_songs = pd.concat([public_songs1, public_songs2, public_songs3, public_songs4, public_songs5, public_songs6])
+public_songs = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/kaggle_com_geomack_spotifyclassification.csv') 
+public_songs = public_songs.reset_index()
+del public_songs['index']
+
+# set up data for training - declare feature columns
+feat_cols = ['artist',
+    'danceability', 'energy', 'key', 'loudness', 'mode',
+       'speechiness', 'acousticness', 'instrumentalness', 'liveness',
+       'valence', 'tempo','duration_ms', 'time_signature']
+
+x = my_songs[feat_cols]
+y = my_songs[['Liked']]
+
+from sklearn import preprocessing
+from sklearn.preprocessing import OneHotEncoder
+
+# one hot encode features such as artist
+x_dum = pd.get_dummies(x)
+feat_cols_my_songs = x_dum.columns
+
+public_songs_dum = pd.get_dummies(public_songs[feat_cols])
+feat_cols_public_songs = public_songs_dum.columns
+
+# make feature columns a set of feature columns from my songs and public songs (set is the intersection of both)
+feat_cols_new = list(set(feat_cols_my_songs) & set(feat_cols_public_songs))
+
+# scale features
+scaler = MinMaxScaler()
+X = scaler.fit_transform(x_dum[feat_cols_new])
+X, y = resample(X, y, random_state=0)
+
+# split into train, test groups
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+# train model
+# error_rate = []
+# for i in range(1,40):
+#     model = KNeighborsClassifier(n_neighbors=i).fit(X_train, y_train.values.ravel())
+#     y_pred = model.predict(X_test)
+#     error_rate.append(np.mean(y_pred != y_test['Liked'].values))
+
+# plt.figure(figsize=(10,6))
+# plt.plot(range(1,40),error_rate,color='blue', linestyle='dashed', marker='o',markerfacecolor='red', markersize=10)
+# plt.title('Error Rate vs. K Value')
+# plt.xlabel('K')
+# plt.ylabel('Error Rate')
+# plt.show()
+
+model = xgb.XGBClassifier(
+    #objective="binary:logistic", 
+    random_state=42,
+    colsample=1,
+    gamma= 0.04548820459368774,
+    learning_rate=0.2984627947336355,
+    max_depth=9,
+    n_estimators=978,
+    subsample=1
+    ).fit(X_train, y_train.values.ravel())
+
+#LRModel = LogisticRegression(random_state=0, class_weight='balanced').fit(X_train, y_train.values.ravel())
+#y_pred = LRModel.predict(X_test)
+#lgbm = LGBMClassifier(class_weight='balanced', random_state=5).fit(X_train, y_train.values.ravel())
+#y_pred = lgbm.predict(X_test)
+
+# see how model performs
+#model = KNeighborsClassifier(n_neighbors=9).fit(X_train, y_train.values.ravel())
+y_pred = model.predict(X_test)
+print(classification_report(y_test, y_pred, labels=[0,1]))
+
+# write predictions to data set
+X_pred = scaler.fit_transform(public_songs_dum[feat_cols_new])
+predictions = model.predict_proba(X_pred)
+Public_Songs = pd.DataFrame(X_pred, columns = feat_cols_new) # this is too many columns to visualize effective - just going to focus on main feat_cols
+Public_Songs = Public_Songs[['danceability', 'energy', 'key', 'loudness', 'mode',
+       'speechiness', 'acousticness', 'instrumentalness', 'liveness',
+       'valence', 'tempo','duration_ms', 'time_signature']]
+Public_Songs['predict'] = predictions[:,0]
+#Public_Songs['Predicted_Like'] = predictions[:,0] >= 0.99
+#predictions = LRModel.predict(scaler.fit_transform(public_songs[feat_cols]))
+#predictions = lgbm.predict_proba(scaler.fit_transform(public_songs_dum[feat_cols_new]))
+public_songs['Prediction'] = predictions[:,0]
+public_songs['Predicted_Like'] = predictions[:,0] >= 0.99
+def get_uris(df):
+    uri_list = df['uri'].tolist()
+    return uri_list
+
+def get_uris_raw(uri_list):
+    uri_list_split = []
+    for uri in uri_list:
+        uri_list_split.append(uri.split(':')[2])
+    return uri_list_split
+
+uri_list = get_uris(public_songs)
+print('song count = {}'.format(str(len(uri_list))))
+uri_list_split = get_uris_raw(uri_list)
+# df = pd.DataFrame(columns = ['album','url','popularity','release_date'])
+
+# def get_more_data(df,uri_list_split):
+#     for uri in uri_list_split:
+#         i = uri_list_split.index(uri)
+#         f = float(i/100)
+#         if f.is_integer():
+#             print('refreshing token')
+#             try:
+#                 token = util.prompt_for_user_token(username, scope) # add scope
+#             except (AttributeError, JSONDecodeError):
+#                 os.remove(f".cache-{username}")
+#                 token = util.prompt_for_user_token(username, scope) # add scope
+#         url = "https://api.spotify.com/v1/tracks/{}".format(uri)
+#         r = requests.get(url, headers=headers)
+#         parsed = json.loads(r.text)
+#         try: 
+#             album = parsed['album']['name']
+#         except:
+#             album = ''
+#         try:
+#             url = parsed['external_urls']['spotify']
+#         except:
+#             url = ''
+#         try:
+#             popularity = parsed['popularity']
+#         except:
+#             popularity = ''
+#         try:
+#             release_date = parsed['album']['release_date']
+#         except:
+#             release_date = ''
+#         try:
+#             uri = parsed['uri']
+#         except:
+#             uri = ''
+#         #print("{} {}".format(i, uri))
+#         df1 = pd.DataFrame([[album, url, popularity, release_date, uri]], columns = ['album','url','popularity','release_date','uri'])
+#         df1 = df1.reset_index()
+#         df1.set_index('uri', inplace=True)
+#         del df1['index']
+#         df = df.append(df1)
+#     return df
+
+# for i in range(0, math.ceil(len(uri_list_split)/100)):
+#     print(i*100)
+#     df = get_more_data(df, uri_list_split[i*100:100*(i+1)])
+
+# df.drop_duplicates(keep=False,inplace=True) 
+# df = df.merge(public_songs, on = 'uri')
+df = public_songs
+predicted_likes = df[df['Predicted_Like']==1]
+predicted_dislikes = df[df['Predicted_Like']==0]
+
+predicted_likes.to_csv(r'/Users/Will/Documents/Spotipy/predicted_likes.csv')
+#predicted_dislikes.to_csv(r'/Users/Will/Documents/Spotipy/predicted_dislikes.csv')
+
+uri_list = get_uris(predicted_likes)
+playlist_uri = playlists_df.loc[pred_like_playlist_name][0].split(':')[2]
+
+def add_songs_to_playlist(uri_list, playlist_uri):
+    df = pd.DataFrame()
+    for uri in uri_list:
+        url = "https://api.spotify.com/v1/playlists/{}/tracks?uris={}".format(playlist_uri,uri)
+        requests.post(url, headers=headers)
+    return
+
+#https://towardsdatascience.com/explain-your-model-with-the-shap-values-bc36aac4de3d
+#shap_values = shap.TreeExplainer(lgbm).shap_values(X_train)
+# shap_values = shap.TreeExplainer(xgb_model).shap_values(X_train)
+# shap.summary_plot(shap_values, features=X_train, feature_names=feat_cols_new, plot_type="bar")
+# shap.summary_plot(shap_values, features=X_train, feature_names=feat_cols_new)
+# shap.dependence_plot("instrumentalness", shap_values, features=X_train, feature_names=feat_cols_new)
+# # Initialize your Jupyter notebook with initjs(), otherwise you will get an error message.
+
+
+# def shap_plot(j):
+#     explainerModel = shap.TreeExplainer(xgb_model)
+#     shap_values_Model = explainerModel.shap_values(S)
+#     p = shap.force_plot(explainerModel.expected_value, shap_values_Model[j], S.iloc[[j]])
+#     return(p)
+
+add_songs_to_playlist(uri_list, playlist_uri)
+
+#from sklearn.metrics import mean_squared_error
+pbounds = {
+    'learning_rate': (0.01, 1.0),
+    'n_estimators': (100, 1000),
+    'max_depth': (3,10),
+    'subsample': (1.0, 1.0),  # Change for big datasets
+    'colsample': (1.0, 1.0),  # Change for datasets with lots of features
+    'gamma': (0, 5)}
+def xgboost_hyper_param(learning_rate,
+                        n_estimators,
+                        max_depth,
+                        subsample,
+                        colsample,
+                        gamma):
+    max_depth = int(max_depth)
+    n_estimators = int(n_estimators)
+    clf = XGBClassifier(
+        max_depth=max_depth,
+        learning_rate=learning_rate,
+        n_estimators=n_estimators,
+        gamma=gamma)
+    return np.mean(cross_val_score(clf, X_train, y_train.values.ravel(), cv=3, scoring='roc_auc'))
+
+optimizer = BayesianOptimization(
+    f=xgboost_hyper_param,
+    pbounds=pbounds,
+    random_state=1,
+)
+
+optimizer.maximize(
+    init_points=20,
+    n_iter=20,
+)
+
+# for i, res in enumerate(optimizer.res):
+#     print("Iteration {}: \n\t{}".format(i, res))
+
+print(optimizer.max)
+
+# https://github.com/tgel0/spotify-data/blob/master/notebooks/SpotifyDataRetrieval.ipynb
+# timeit library to measure the time needed to run this code
+import timeit
+start = timeit.default_timer()
+
+# create empty lists where the results are going to be stored
+artist_name = []
+track_name = []
+popularity = []
+track_id = []
+
+for i in range(0,10000,50):
+    track_results = sp.search(q='year:2020', type='track', limit=50,offset=i)
+    for i, t in enumerate(track_results['tracks']['items']):
+        artist_name.append(t['artists'][0]['name'])
+        track_name.append(t['name'])
+        track_id.append(t['id'])
+        popularity.append(t['popularity'])
+      
+
+stop = timeit.default_timer()
+print ('Time to run this code (in seconds):', stop - start)
+print('number of elements in the track_id list:', len(track_id))
+
+

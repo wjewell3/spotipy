@@ -1,0 +1,284 @@
+#spotify data download
+#run the following in Terminal before continuing
+# export SPOTIPY_CLIENT_ID='49b756e678ec420c9bbcd5f1c7d9db98'
+# export SPOTIPY_CLIENT_SECRET='3d4e82d8a4254a0daf1201d9823b7ddc'
+# export SPOTIPY_REDIRECT_URI='http://google.com/'
+
+import os
+import sys
+import json
+import spotipy
+import webbrowser
+import spotipy.util as util
+from json.decoder import JSONDecodeError
+import requests
+import math
+import time
+import pandas as pd
+from IPython.display import display
+from pandas.io.json import json_normalize
+
+username = "1254636534"
+scope = '''
+playlist-modify-private 
+playlist-modify-public 
+playlist-read-collaborative 
+playlist-read-private
+user-follow-modify 
+user-follow-read 
+user-library-modify 
+user-library-read 
+user-modify-playback-state 
+user-read-currently-playing 
+user-read-email 
+user-read-playback-state 
+user-read-private 
+user-read-recently-played 
+user-top-read''' #   
+
+# Erase cache and prompt for user permission
+try:
+    token = util.prompt_for_user_token(username, scope) # add scope
+except (AttributeError, JSONDecodeError):
+    os.remove(f".cache-{username}")
+    token = util.prompt_for_user_token(username, scope) # add scope
+
+# Create our spotify object with permissions
+spotifyObject = spotipy.Spotify(auth=token)
+
+user = spotifyObject.current_user()
+sp = spotifyObject
+
+#########################################################################
+#https://vsupalov.com/analyze-spotify-music-library-with-jupyter-pandas/
+url = "https://api.spotify.com/v1/me/tracks"
+headers = {'Authorization': "Bearer {}".format(token)}
+r = requests.get(url, headers=headers)
+parsed = json.loads(r.text)
+all_songs = []
+count_songs = parsed["total"]
+
+#get raw data
+for i in range(int(math.ceil(count_songs/50.0))):
+    offset = 50*i
+    url = "https://api.spotify.com/v1/me/tracks?limit=50&offset={}".format(offset)
+    headers = {'Authorization': "Bearer {}".format(token)}
+    r = requests.get(url, headers=headers)
+    parsed = json.loads(r.text)
+    all_songs.extend(parsed["items"])
+
+# metadata
+df_1 = pd.DataFrame(columns = ['album','artist','song','url','popularity','added_at','release_date','uri'])
+
+for i in range(0, len(all_songs)):
+    album = all_songs[i]['track']['album']['name']
+    artist = all_songs[i]['track']['album']['artists'][0]['name']
+    song = all_songs[i]['track']['name']
+    url = all_songs[i]['track']['external_urls']['spotify']
+    popularity = all_songs[i]['track']['popularity']
+    added_at = all_songs[i]['added_at']
+    release_date = all_songs[i]['track']['album']['release_date']
+    uri = all_songs[i]['track']['uri']
+    df_1 = df_1.append(pd.DataFrame([[album, artist, song, url, popularity, added_at, release_date, uri]], columns = ['album','artist','song','url','popularity','added_at','release_date','uri']))
+
+df_1 = df_1.reset_index()
+del df_1['index']
+df_1.set_index('uri', inplace=True)
+
+#########################################################################
+# song_count = sp.current_user_saved_tracks(limit=1,offset=0)['total']
+# offset_upper = math.floor(song_count/50)
+# list_ = []
+# for i in range(0, song_count):
+#     results = sp.current_user_saved_tracks(limit=1,offset=i) # max limit 50
+#     for i in range(0,len(results['items'])):
+#         list_.append(results['items'][i]['track']['uri'])
+# list_ = list(set(list_))
+# len(list_)
+
+# results = sp.current_user_top_tracks(time_range='short_term')
+# for i in range(0,len(results['items'])):
+# 	list_.append(results['items'][i]['uri'])
+
+# results = sp.current_user_top_tracks(time_range='medium_term')
+# for i in range(0,len(results['items'])):
+# 	list_.append(results['items'][i]['uri'])
+
+# results = sp.current_user_top_tracks(time_range='long_term')
+# for i in range(0,len(results['items'])):
+# 	list_.append(results['items'][i]['uri'])
+
+#print(list_)
+
+# results = sp.current_user_playlists()
+# for i in range(0,len(results['items'])):
+# 	print(results['items'][i]['name'])
+
+# results = sp.current_user_top_artists(time_range='medium_term')
+# for i in range(0,len(results['items'])):
+# 	print(results['items'][i]['name'])
+
+
+
+# get features of liked songs
+# just a list of uris
+song_list = []
+for i in range(0, len(all_songs)):
+    song_list.append(all_songs[i]['track']['uri'])
+
+df_2 = pd.DataFrame()
+for i in range(0,math.ceil(len(song_list)/100)):
+	features = sp.audio_features(song_list[(i)*100:100*(i+1)])
+	df_2 = df_2.append(pd.DataFrame(features))
+
+df_2.set_index('uri', inplace=True)
+
+like_df = df_1.merge(df_2, on = 'uri')
+like_df.to_csv(r'/Users/Will/Documents/Spotipy/liked_songs.csv')
+
+results = sp.current_user_playlists()
+
+playlists_df = pd.DataFrame()
+for i in range(0, len(results)):
+    playlist = results['items'][i]['name']
+    playlist_uri = results['items'][i]['uri']
+    playlists_df = playlists_df.append(pd.DataFrame([[playlist_uri, playlist]], columns = ['playlist','playlist_uri']))
+
+display(playlists_df.head())
+uri = 'spotify:playlist:4zoDh60COnrbyctm9z9h77'
+dislike = sp.user_playlist_tracks(uri.split(':')[1], uri.split(':')[2])['items']
+
+dislike_df_1 = pd.DataFrame()
+for i in range(0, len(dislike)):
+    album = dislike[i]['track']['album']['name']
+    artist = dislike[i]['track']['album']['artists'][0]['name']
+    song = dislike[i]['track']['name']
+    url = dislike[i]['track']['external_urls']['spotify']
+    popularity = dislike[i]['track']['popularity']
+    added_at = dislike[i]['added_at']
+    release_date = dislike[i]['track']['album']['release_date']
+    uri = dislike[i]['track']['uri']
+    dislike_df_1 = dislike_df_1.append(pd.DataFrame([[album, artist, song, url, popularity, added_at, release_date, uri]], columns = ['album','artist','song','url','popularity','added_at','release_date','uri']))
+
+dislike_df_1 = dislikes_df_1.reset_index()
+del dislike_df_1['index']
+dislike_df_1.set_index('uri', inplace=True)
+
+song_list = []
+for i in range(0, len(dislike)):
+    song_list.append(dislike[i]['track']['uri'])
+
+dislike_df_2 = pd.DataFrame()
+for i in range(0,math.ceil(len(song_list)/100)):
+    features = sp.audio_features(song_list[(i)*100:100*(i+1)])
+    dislike_df_2 = dislike_df_2.append(pd.DataFrame(features))
+
+dislike_df_2.set_index('uri', inplace=True)
+dislike_df = dislike_df_1.merge(dislike_df_2, on = 'uri')
+dislike_df.to_csv(r'/Users/Will/Documents/Spotipy/dislikes.csv')
+
+like_df['Liked'] = 1
+dislike_df['Liked'] = 0
+
+my_songs = pd.concat([like_df,dislike_df])
+my_songs.to_csv(r'/Users/Will/Documents/Spotipy/my_songs.csv')
+
+#public songs
+public_songs1 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-00s.csv') 
+public_songs2 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-10s.csv') 
+public_songs3 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-60s.csv') 
+public_songs4 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-70s.csv') 
+public_songs5 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-80s.csv') 
+public_songs6 = pd.read_csv(r'/Users/Will/Documents/Spotipy/the-spotify-hit-predictor-dataset/dataset-of-90s.csv') 
+public_songs = pd.concat([public_songs1, public_songs2, public_songs3, public_songs4, public_songs5, public_songs6])
+
+print(public_songs.shape)
+display(public_songs.head())
+print(public_songs.columns)
+
+
+import sklearn as 
+from sklearn.cluster import KMeans 
+from sklearn import metrics 
+from scipy.spatial.distance import cdist 
+import numpy as np 
+import matplotlib.pyplot as plt  
+from sklearn.preprocessing import MinMaxScaler
+
+feat_cols = ['danceability', 'energy', 'key', 'loudness', 'mode',
+       'speechiness', 'acousticness', 'instrumentalness', 'liveness',
+       'valence', 'tempo','duration_ms', 'time_signature'] #artist
+
+#setting up data for training
+x = my_songs[feat_cols]
+y = my_songs[['Liked']]
+scaler = MinMaxScaler()
+x_scaled = scaler.fit_transform(x)
+
+from sklearn.linear_model import LogisticRegression
+LRModel = LogisticRegression(random_state=0, class_weight='balanced').fit(x, y.values.ravel())
+
+predictions = LRModel.predict(scaler.fit_transform(public_songs[feat_cols]))
+public_songs['Predicted_Like'] = predictions
+
+predicted_likes = public_songs[public_songs['Predicted_Like']==1]
+predicted_dislikes = public_songs[public_songs['Predicted_Like']==0]
+
+predicted_likes.to_csv(r'/Users/Will/Documents/Spotipy/predicted_likes.csv')
+predicted_dislikes.to_csv(r'/Users/Will/Documents/Spotipy/predicted_dislikes.csv')
+
+predicted_liked_uris = predicted_likes['uri'].tolist()
+predicted_disliked_uris = predicted_dislikes['uri'].tolist()
+
+parsed_predicted_liked_uris = []
+for uri in predicted_liked_uris:
+    parsed_predicted_liked_uris.append(uri.split(':')[2])
+
+predicted_likes_more_features_df = pd.DataFrame()
+
+parsed_predicted_liked_all_data = []
+for uri in parsed_predicted_liked_uris:
+    url = "https://api.spotify.com/v1/tracks/"+uri
+    r = requests.get(url, headers=headers)
+    parsed = json.loads(r.text)
+    album = parsed['album']['name']
+    url = parsed['external_urls']['spotify']
+    popularity = parsed['popularity']
+    release_date = parsed['album']['release_date']
+    uri = parsed['uri']
+    predicted_likes_more_features_df = predicted_likes_more_features_df.append(pd.DataFrame([[album, artist, song, url, popularity, release_date, uri]], columns = ['album','artist','song','url','popularity','release_date','uri']))
+
+predicted_likes_more_features_df = predicted_likes_more_features_df.reset_index()
+del predicted_likes_more_features_df['index']
+predicted_likes_more_features_df.set_index('uri', inplace=True)
+predicted_likes_more_features_df.to_csv(r'/Users/Will/Documents/Spotipy/predicted_likes_more_features.csv')
+
+parsed_predicted_disliked_uris = []
+for uri in predicted_disliked_uris:
+    parsed_predicted_disliked_uris.append(uri.split(':')[2])
+
+predicted_dislikes_more_features_df = pd.DataFrame()
+
+parsed_predicted_disliked_all_data = []
+for uri in parsed_predicted_disliked_uris:
+    url = "https://api.spotify.com/v1/tracks/"+uri
+    r = requests.get(url, headers=headers)
+    parsed = json.loads(r.text)
+    album = parsed['album']['name']
+    url = parsed['external_urls']['spotify']
+    popularity = parsed['popularity']
+    release_date = parsed['album']['release_date']
+    uri = parsed['uri']
+    predicted_dislikes_more_features_df = predicted_dislikes_more_features_df.append(pd.DataFrame([[album, artist, song, url, popularity, release_date, uri]], columns = ['album','artist','song','url','popularity','release_date','uri']))
+
+predicted_dislikes_more_features_df = predicted_dislikes_more_features_df.reset_index()
+del predicted_dislikes_more_features_df['index']
+predicted_dislikes_more_features_df.set_index('uri', inplace=True)
+
+df = predicted_dislikes_more_features_df.merge(predicted_dislikes, on = 'uri')
+df.to_csv(r'/Users/Will/Documents/Spotipy/predicted_dislikes_more_features.csv')
+
+df = predicted_likes_more_features_df.merge(predicted_likes, on = 'uri')
+df.to_csv(r'/Users/Will/Documents/Spotipy/predicted_likes_more_features.csv')
+
+
