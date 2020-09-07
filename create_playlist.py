@@ -13,13 +13,19 @@
 # 5. Create genre score
 ### Repeat process (steps 2-5) for disliked songs (based on dislike playlist) ###
 # 6. Create playlist df (to access disliked playlist)
+# 7. Combine liked and disliked songs into my_songs dataframe with "Liked" flag
+# 8. Get featured playlist uris so we can get their associated songs
+# 9. Get raw data from the songs
+# ....
+# 10. Create playlist
 
 
-# In[24]:
+# In[9]:
 
 
 # 0. Declare name of playlist to be created
-pred_like_playlist_name = "Genre_Score>0"
+pred_like_playlist_name = "GenreScore>20"
+genre_threshold = 21
 
 
 # In[3]:
@@ -244,7 +250,7 @@ def establish_genre_score(genre_count_df, df):
     groupby_cols = df.columns.to_list()[:-1]
     
     print('\nSumming genre column')
-    df = df.groupby(groupby_cols).sum()
+    df = df.groupby(groupby_cols).sum().sort_values('genre count', ascending=False)
     df = df.rename({'genre count': 'genre score'}, axis=1).reset_index() 
     # reset index after summing - otherwise everything prior to sum will become index
     df.set_index('uri', inplace=True)
@@ -256,9 +262,18 @@ def establish_genre_score(genre_count_df, df):
 def get_playlist_uris(playlists_raw):
     df = pd.DataFrame()
     for i in range(0, len(playlists_raw)):
-        playlist = playlists_raw['items'][i]['name']
-        playlist_uri = playlists_raw['items'][i]['uri']
-        song_count = playlists_raw['items'][i]['tracks']['total']
+        try:
+            playlist = playlists_raw[i]['name']
+        except:
+            playlist = ''
+        try:
+            playlist_uri = playlists_raw[i]['uri']
+        except:
+            playlist_uri = ''
+        try:
+            song_count = playlists_raw[i]['tracks']['total']
+        except:
+            song_count = 0
         df = df.append(pd.DataFrame([[playlist, playlist_uri, song_count]], columns = ['playlist','playlist_uri','song_count']))
     df.set_index(['playlist'], inplace=True)
     print('playlist_df')
@@ -266,10 +281,11 @@ def get_playlist_uris(playlists_raw):
     return df
 
 def get_raw_disliked_song_list():
-    playlists_raw = sp.current_user_playlists()
+    playlists_raw = sp.current_user_playlists()['items']
     playlists_df = get_playlist_uris(playlists_raw)
-    uri =  playlists_df.loc['Dislikes']['playlist_uri']
-    song_count =  playlists_df.loc['Dislikes']['song_count']
+    display(playlists_df)
+    uri = playlists_df.loc['Dislikes']['playlist_uri']
+    song_count = playlists_df.loc['Dislikes']['song_count']
     # extract data from Disliked songs
     dislike_raw_list = []
     for i in range(int(math.ceil(song_count/100.0))):
@@ -288,6 +304,7 @@ def combine_dfs_to_create_my_songs_df(df1,df2, save_destination):
     display(my_songs_df.head())
     print('successfully saved to .csv and .pkl files in save_destination')
 
+# 7. Combine liked and disliked songs into my_songs dataframe with "Liked" flag
 # 8. Get featured playlist uris so we can get their associated songs
 def get_featured_playlist_uris():
     print('Getting raw_featured_playlist_df')
@@ -304,6 +321,8 @@ def get_featured_playlist_uris():
     display(df)
     return df
 
+# 7. Combine liked and disliked songs into my_songs dataframe with "Liked" flag
+# 8. Get featured playlist uris so we can get their associated songs
 # 9. Get raw data from the songs
 def get_raw_featured_playlist_song_list():
     playlists_df = get_featured_playlist_uris()
@@ -319,7 +338,7 @@ def get_raw_featured_playlist_song_list():
     return raw_featured_songs
 
 def create_playlist(pred_like_playlist_name, df, genre_score_threshold):
-    playlists_raw = sp.current_user_playlists()
+    playlists_raw = sp.current_user_playlists()['items']
     playlists_df = get_playlist_uris(playlists_raw)
     playlist_uri = get_playlist_uris(playlists_raw).loc[playlists_df.index == pred_like_playlist_name,'playlist_uri'][0].split(':')[2]
     uri_list = df.loc[df['genre score']>= genre_score_threshold].reset_index()['uri'].to_list()
@@ -343,6 +362,11 @@ genre_exploded_df = explode_genres(genre_df)
 liked_song_df = add_genres(liked_song_df, genre_exploded_df)
 liked_genre_count_df = get_genre_counts(genre_exploded_df)
 liked_song_df = establish_genre_score(liked_genre_count_df, liked_song_df)
+
+
+# In[5]:
+
+
 print('\n****PART 2: Get Disliked Songs Dataframe****\n')
 define_scope()
 raw_disliked_song_list = get_raw_disliked_song_list()
@@ -355,8 +379,19 @@ disliked_genre_count_df = get_genre_counts(genre_exploded_df)
 disliked_genre_count_df['genre count'] = disliked_genre_count_df['genre count'] * -1
 genre_count_df = pd.concat([liked_genre_count_df, disliked_genre_count_df])
 disliked_song_df = establish_genre_score(disliked_genre_count_df, disliked_song_df)
+
+
+# In[6]:
+
+
 print('\n****PART 3: Combine liked and disliked songs into my_songs dataframe with "Liked" flag and saving as .csv and pickle file***\n')
 my_songs_df = combine_dfs_to_create_my_songs_df(liked_song_df,disliked_song_df,'/Users/Will/Documents/Spotipy')
+#my_songs_df = pd.read_pickle("./my_songs.pkl")
+
+
+# In[7]:
+
+
 print('\n****PART 4: Get songs from featured playlists and score them based on genre****\n')
 raw_featured_playlist_songs_list = get_raw_featured_playlist_song_list()
 featured_playlist_song_df = song_metadata_to_df(raw_featured_playlist_songs_list)
@@ -367,35 +402,14 @@ featured_playlist_song_df = add_genres(featured_playlist_song_df, genre_exploded
 featured_playlist_song_df = establish_genre_score(genre_count_df, featured_playlist_song_df)
 
 
-# In[21]:
+# In[10]:
 
 
-my_songs_df = pd.read_pickle("./my_songs.pkl")
-
-
-# In[25]:
-
-
-create_playlist(pred_like_playlist_name, featured_playlist_song_df, 1)
+create_playlist(pred_like_playlist_name, featured_playlist_song_df, genre_threshold)
 
 
 # In[ ]:
 
 
-def get_uris(df):
-    uri_list = df['uri'].tolist()
-    return uri_list
 
-def add_songs_to_playlist(uri_list, playlist_uri):
-    df = pd.DataFrame()
-    for uri in uri_list:
-        url = f"https://api.spotify.com/v1/playlists/{playlist_uri}/tracks?uris={uri}"
-        requests.post(url, headers=headers)
-    return
-
-def get_uris_raw(uri_list):
-    uri_list_split = []
-    for uri in uri_list:
-        uri_list_split.append(uri.split(':')[2])
-    return uri_list_split
 
