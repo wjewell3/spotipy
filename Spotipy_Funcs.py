@@ -19,7 +19,7 @@
 
 
 # 0. Declare name of playlist to be created
-pred_like_playlist_name = "Genre_Score>=50"
+pred_like_playlist_name = "Genre_Score>0"
 
 
 # In[3]:
@@ -376,7 +376,7 @@ my_songs_df = pd.read_pickle("./my_songs.pkl")
 # In[25]:
 
 
-create_playlist(pred_like_playlist_name, featured_playlist_song_df, 50)
+create_playlist(pred_like_playlist_name, featured_playlist_song_df, 1)
 
 
 # In[ ]:
