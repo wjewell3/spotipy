@@ -3,6 +3,4 @@ jupyter==1.0.0
 numpy==1.19.1
 pandas==1.1.0
 pickleshare==0.7.5
-virtualenv==20.0.30
-virtualenvwrapper==4.8.4
 spotipy
