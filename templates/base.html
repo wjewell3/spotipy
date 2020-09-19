@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<title>Base Layout</title>
+<div>
+  <body>
+    <h2>Welcome to Will Jewell's Spotipy Playlist Creator</h2>
+    <form action="/create_playlist_">
+        <p>What's do you want to call your new playlist?</p>
+        <input type='text' name='playlist_name'><br>
+        <p>What genre score threshold do you want to use (default 20)?<br>
+        The higher the threshold score, the fewer songs you will get but the songs will be more relevant. </p>
+        <input type='text' name='genre_score_thresh'><br>
+        <input type='submit' value='Continue'>
+    </form>
+</body>
+  {% block body %}{% endblock %}
+</div>
