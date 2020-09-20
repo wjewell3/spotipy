@@ -11,3 +11,5 @@ requests
 PyYAML
 #uwsgi
 #flask-socketio==3.3.1
+schedule
+pyxtermjs
