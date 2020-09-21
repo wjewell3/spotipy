@@ -11,6 +11,7 @@ import subprocess
 import signal
 import io
 import webbrowser
+from config import CONFIG
 
 def default_sigpipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
@@ -22,8 +23,8 @@ app.secret_key = 'blah'
 
 API_BASE = 'https://accounts.spotify.com'
 
-CLI_ID = os.environ['SPOTIPY_CLIENT_ID']
-CLI_SEC = os.environ['SPOTIPY_CLIENT_SECRET']
+CLI_ID = CONFIG["env_variables"]['SPOTIPY_CLIENT_ID']
+CLI_SEC = CONFIG["env_variables"]['SPOTIPY_CLIENT_SECRET']
 SCOPE = '''
     playlist-modify-private, 
     playlist-modify-public,
@@ -42,9 +43,9 @@ SCOPE = '''
     user-top-read'''
 
 # Make sure you add this to Redirect URIs in the setting of the application dashboard
-REDIRECT_URI = "http://127.0.0.1:5000/api_callback"
+REDIRECT_URI = CONFIG["env_variables"]['SPOTIPY_REDIRECT_URI']
 #"http://localhost:8888/api_callback"
-#http://127.0.0.1:5000/api_callback
+#http://0.0.0.0:5000/api_callback
 # Set this to True for testing but you probably want it set to False in production.
 SHOW_DIALOG = True
 
@@ -106,7 +107,7 @@ def create_playlist_():
         ,shell=True
         )
         time.sleep(2)
-        webbrowser.open('http://127.0.0.1:5001/',new=0)
+        webbrowser.open('http://0.0.0.0:5001/',new=0)
         #subprocess.run('open localhost:5001/', shell=True)
     return 
 

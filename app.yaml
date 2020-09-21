@@ -1,4 +1,4 @@
-runtime: python37 # or python37 for Python 3.7
+runtime: python38 # or python37 for Python 3.7
 
 instance_class: F2
 

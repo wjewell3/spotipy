@@ -15,7 +15,7 @@ def path_constructor(loader, node):
 
 yaml.add_implicit_resolver('!path', path_matcher)
 yaml.add_constructor('!path', path_constructor)
-with open('config.yaml') as yaml_file:
+with open('app.yaml') as yaml_file:
     try:
         CONFIG = yaml.load(yaml_file)
     except yaml.YAMLError as exc:
