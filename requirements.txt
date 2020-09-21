@@ -1,4 +1,4 @@
-mod_wsgi-standalone
+#mod_wsgi-standalone
 ipython==7.16.1
 jupyter==1.0.0
 numpy==1.19.1
