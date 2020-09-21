@@ -1,3 +1,4 @@
+mod_wsgi-standalone
 ipython==7.16.1
 jupyter==1.0.0
 numpy==1.19.1
@@ -5,11 +6,11 @@ pandas==1.1.0
 pickleshare==0.7.5
 spotipy
 flask
-mod_wsgi
 flask_cors
 requests
 PyYAML
 #uwsgi
 #flask-socketio==3.3.1
-schedule
+#schedule
 pyxtermjs
+Werkzeug

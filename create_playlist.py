@@ -57,7 +57,7 @@ def define_scope():
     username = os.environ['SPOTIPY_USERNAME']
     client_id = os.environ['SPOTIPY_CLIENT_ID']
     client_secret = os.environ['SPOTIPY_CLIENT_SECRET']
-    redirect_uri = 'http://google.com'
+    redirect_uri = 'http://google.com/'
     scope = '''
     playlist-modify-private 
     playlist-modify-public 

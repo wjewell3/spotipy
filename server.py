@@ -10,22 +10,15 @@ import time
 import subprocess
 import signal
 import io
-import schedule
-import threading
 import webbrowser
-
-def change_port():
-    webbrowser.open('http://127.0.0.1:8080/',new=0)
-    return
 
 def default_sigpipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-logging.basicConfig(filename='demo.log',level=logging.DEBUG)
-application = Flask(__name__)
-cors = CORS(application, resources={r"/api/*": {"origins": "*"}})
+app = Flask(__name__)
+#cors = CORS(application, resources={r"/api/*": {"origins": "*"}})
 
-application.secret_key = 'blah'
+app.secret_key = 'blah'
 
 API_BASE = 'https://accounts.spotify.com'
 
@@ -49,24 +42,20 @@ SCOPE = '''
     user-top-read'''
 
 # Make sure you add this to Redirect URIs in the setting of the application dashboard
-REDIRECT_URI = "http://127.0.0.1:5000/api_callback"
-
+REDIRECT_URI = "http://google.com/"
+#"http://localhost:8888/api_callback"
+#http://127.0.0.1:5000/api_callback
 # Set this to True for testing but you probably want it set to False in production.
 SHOW_DIALOG = True
 
 # authorization-code-flow Step 1. Have your application request authorization; 
 # the user logs in and authorizes access
-@application.route("/")
+@app.route("/")
 def verify():
     auth_url = f'{API_BASE}/authorize?client_id={CLI_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}'
     print(auth_url)
-    return redirect(auth_url)
-
-# authorization-code-flow Step 2.
-# Have your application request refresh and access tokens;
-# Spotify returns access and refresh tokens
-@application.route("/api_callback")
-def api_callback():
+    redirect(auth_url)
+    time.sleep(1)
     session.clear()
     code = request.args.get('code')
 
@@ -74,7 +63,7 @@ def api_callback():
     res = requests.post(auth_token_url, data={
         "grant_type":"authorization_code",
         "code":code,
-        "redirect_uri":"http://127.0.0.1:5000/api_callback",
+        "redirect_uri":REDIRECT_URI,
         "client_id":CLI_ID,
         "client_secret":CLI_SEC
         })
@@ -84,11 +73,18 @@ def api_callback():
     session["toke"] = res_body.get("access_token")
     return redirect("user_input")
 
-@application.route("/user_input")
+# authorization-code-flow Step 2.
+# Have your application request refresh and access tokens;
+# Spotify returns access and refresh tokens
+# @app.route("/api_callback")
+# def api_callback():
+
+
+@app.route("/user_input")
 def user_input():
     return render_template("base.html")         
 
-@application.route('/create_playlist_')
+@app.route('/create_playlist_')
 def create_playlist_():
     playlist_name = request.args.get('playlist_name')
     genre_score_thresh = request.args['genre_score_thresh']
@@ -104,12 +100,13 @@ def create_playlist_():
         </form>
         </body></html>"""
     else: 
-        subprocess.Popen(f"pyxtermjs -p 8080 --command python --cmd-args='create_playlist.py '{playlist_name}' '{genre_score_thresh}''"
+        subprocess.Popen(f"pyxtermjs -p 5001 --command python --cmd-args='create_playlist.py '{playlist_name}' '{genre_score_thresh}''"
         ,shell=True
         )
-        time.sleep(1)
-        subprocess.run('open http://127.0.0.1:8080/', shell=True)
+        time.sleep(2)
+        webbrowser.open('http://127.0.0.1:5001/',new=0)
+        #subprocess.run('open localhost:5001/', shell=True)
     return 
 
 if __name__ == '__main__':
-    application.run()
+    app.run()
