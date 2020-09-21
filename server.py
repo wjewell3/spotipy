@@ -42,7 +42,7 @@ SCOPE = '''
     user-top-read'''
 
 # Make sure you add this to Redirect URIs in the setting of the application dashboard
-REDIRECT_URI = "http://google.com/"
+REDIRECT_URI = "http://127.0.0.1:5000/api_callback"
 #"http://localhost:8888/api_callback"
 #http://127.0.0.1:5000/api_callback
 # Set this to True for testing but you probably want it set to False in production.
@@ -52,10 +52,18 @@ SHOW_DIALOG = True
 # the user logs in and authorizes access
 @app.route("/")
 def verify():
+    global auth_url
     auth_url = f'{API_BASE}/authorize?client_id={CLI_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}'
     print(auth_url)
-    redirect(auth_url)
-    time.sleep(1)
+    return redirect(auth_url)
+    #time.sleep(1)
+    
+
+# authorization-code-flow Step 2.
+# Have your application request refresh and access tokens;
+# Spotify returns access and refresh tokens
+@app.route("/api_callback")
+def api_callback():
     session.clear()
     code = request.args.get('code')
 
@@ -72,12 +80,6 @@ def verify():
     print(res.json())
     session["toke"] = res_body.get("access_token")
     return redirect("user_input")
-
-# authorization-code-flow Step 2.
-# Have your application request refresh and access tokens;
-# Spotify returns access and refresh tokens
-# @app.route("/api_callback")
-# def api_callback():
 
 
 @app.route("/user_input")
