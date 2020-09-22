@@ -1,13 +1,16 @@
 runtime: python38 # or python37 for Python 3.7
+#env: flex
+#entrypoint: gunicorn -b :8080 main:app
 
-instance_class: F2
+instance_class: F4
 
 env_variables:
   SPOTIPY_CLIENT_ID: '6367fb004caf41afb477e69650552474'
   SPOTIPY_CLIENT_SECRET: 'f4a4e68ec36b4a059510693b3697872c'
-  SPOTIPY_REDIRECT_URI: 'http://localhost:8888/api_callback'
-  #SPOTIPY_REDIRECT_URI: 'http://google.com/'
+  SPOTIPY_REDIRECT_URI: 'https://spotify-playlist-290119.uc.r.appspot.com/api_callback'
+  #SPOTIPY_REDIRECT_URI: 'http://127.0.0.1:5000/api_callback'
   SPOTIPY_USERNAME: '1254636534'
+  HOST: '0.0.0.0'
 
 handlers:
 # Matches requests to /images/... to files in static/images/...

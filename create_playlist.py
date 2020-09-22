@@ -101,25 +101,25 @@ def req(url,headers):
     return json.loads(r.text)
 
 def get_raw_liked_song_list():
-    print('Get_raw_liked_song_list')
+    print('Get_raw_liked_song_list', flush=True)
     offset = 0
     url = f"https://api.spotify.com/v1/me/tracks?limit=50&offset={offset}"
 
     liked_song_count = req(url,headers=headers)["total"]
-    print("Liked song count: ", liked_song_count)
+    print(f"Liked song count: {liked_song_count}", flush=True)
 
     raw_liked_songs = []
     for i in range(int(math.ceil(liked_song_count/50.0))):
         offset = 50*i
         raw_liked_songs.extend(req(f"https://api.spotify.com/v1/me/tracks?limit=50&offset={offset}",headers=headers)["items"])
 
-    print(f">> raw liked songs['0'] \n>> {raw_liked_songs[0]}")
+    print(f">> raw liked songs['0'] \n>> {raw_liked_songs[0]}", flush=True)
     return raw_liked_songs
 
 # 2b. transform liked song raw data list into df
 # parse out data from Liked Songs' raw data
 def song_metadata_to_df(raw_songs):
-    print('Transforming song raw data list into df\n')
+    print('Transforming song raw data list into df\n', flush=True)
     define_scope()
     # create empty df
     df = pd.DataFrame(columns = [
@@ -137,7 +137,7 @@ def song_metadata_to_df(raw_songs):
     # parse out songs 100 at a time
     for i in range(0, len(raw_songs)):
         if (i/100).is_integer():
-            print(f"{i}/{len(raw_songs)} parsed")
+            print(f"{i}/{len(raw_songs)} parsed",flush=True)
         try:
             album = raw_songs[i]['track']['album']['name']
             artist_uri = raw_songs[i]['track']['artists'][0]['uri'].split(':')[2]
@@ -204,7 +204,7 @@ def get_genres(df):
     print(len(artist_uris), ' distinct artists')
     for i in range(0, len(artist_uris)):
         if (i/100).is_integer():
-            print(f"{i}/{len(artist_uris)} parsed")
+            print(f"{i}/{len(artist_uris)} parsed",flush=True)
         try:
             g.append(req(url = f"https://api.spotify.com/v1/artists/{artist_uris[i]}",headers=headers)['genres'])
         except:
@@ -310,8 +310,8 @@ def combine_dfs_to_create_my_songs_df(df1,df2, save_destination):
     df1['Liked'] = 1
     df2['Liked'] = 0
     my_songs_df = pd.concat([df1,df2])
-    my_songs_df.to_csv(f"{save_destination}/my_songs.csv")
-    my_songs_df.to_pickle(f"{save_destination}/my_songs.pkl")
+    #my_songs_df.to_:w(f"{save_destination}/my_songs.csv")
+    #my_songs_df.to_pickle(f"{save_destination}/my_songs.pkl")
     display(my_songs_df.head())
     print('successfully saved to .csv and .pkl files in save_destination')
     return 'OK'
@@ -356,7 +356,7 @@ def create_playlist(pred_like_playlist_name, df, genre_score_threshold):
                        , headers = headers
                        , data = json.dumps(payload)
                       )
-    print(result)
+    #print(result)
     playlists_raw = sp.current_user_playlists()['items']
     playlists_df = get_playlist_uris(playlists_raw)
     playlist_uri = get_playlist_uris(playlists_raw).loc[playlists_df.index == pred_like_playlist_name,'playlist_uri'][0].split(':')[2]

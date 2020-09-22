@@ -90,6 +90,7 @@ def user_input():
 @app.route('/create_playlist_')
 def create_playlist_():
     playlist_name = request.args.get('playlist_name')
+    print(playlist_name)
     genre_score_thresh = request.args['genre_score_thresh']
     if float(genre_score_thresh) <= 0:
         return """
@@ -103,13 +104,23 @@ def create_playlist_():
         </form>
         </body></html>"""
     else: 
-        subprocess.Popen(f"pyxtermjs -p 5001 --command python --cmd-args='create_playlist.py '{playlist_name}' '{genre_score_thresh}''"
-        ,shell=True
-        )
-        time.sleep(2)
-        webbrowser.open('http://0.0.0.0:5001/',new=0)
-        #subprocess.run('open localhost:5001/', shell=True)
-    return 
+        #subprocess.Popen(f"pyxtermjs -p 5001 --command python --cmd-args='create_playlist.py '{playlist_name}' '{genre_score_thresh}''", shell=True)
+        def inner():
+            proc = subprocess.Popen(f"python -u create_playlist.py '{playlist_name}' '{genre_score_thresh}'"
+            ,shell=True
+            ,stdout=subprocess.PIPE
+            ,universal_newlines=True
+            )
+            for line in iter(proc.stdout.readline,''):
+                yield line.rstrip() + '<br/>\n'
+
+        return Response(inner(), mimetype='text/html')
+    return 'ok'
+        #time.sleep(2)
+        #webbrowser.open('https://spotify-playlist-290119.uc.r.appspot.com:8081/',new=0)
+        #subprocess.run('open localhost:8082/', shell=True)
+    #return webbrowser.open('http://0.0.0.0:8082/',new=0)
+    #return 'ok'
 
 if __name__ == '__main__':
     app.run()
