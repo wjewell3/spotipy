@@ -11,6 +11,19 @@
         <input type='text' name='genre_score_thresh'><br>
         <input type='submit' value='Continue'>
     </form>
-</body>
+
+    <div class="print_statement_holder"></div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+    <script type=text/javascript>
+      var socket = io.connect('http://' + document.domain + ':' + location.port);
+      socket.on('message event', function(msg) {
+          console.log(msg)
+          $( 'div.print_statement_holder' ).append('<p>' + msg.data + '</p>')
+          //$('#log').append('<p>' + msg.data + '</p>');
+      });
+    </script>
+  </body>
   {% block body %}{% endblock %}
 </div>

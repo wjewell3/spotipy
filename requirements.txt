@@ -15,3 +15,5 @@ PyYAML
 pyxtermjs
 Werkzeug
 gunicorn
+flask_socketio
+#eventlet
