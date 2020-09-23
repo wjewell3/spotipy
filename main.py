@@ -58,7 +58,7 @@ SHOW_DIALOG = True
 app = Flask(__name__)#, instance_relative_config=True)
 app.secret_key = 'blah'
 #cors = CORS(application, resources={r"/api/*": {"origins": "*"}})
-socketio = SocketIO(app)#, transports=['polling', 'websocket'], async_mode=None, async_handlers=True)
+socketio = SocketIO(app, transports=['polling', 'websocket'], async_mode='threading', async_handlers=True, engineio_logger=True)
 
 
     
@@ -147,13 +147,13 @@ def get_raw_liked_song_list():
         offset = 50*i
         raw_liked_songs.extend(req(f"https://api.spotify.com/v1/me/tracks?limit=50&offset={offset}",headers=headers)["items"])
 
-    printio(f">> raw liked songs['0'] \n>> {raw_liked_songs[0]}")
+    printio(f">> raw liked songs['0'] >> {raw_liked_songs[0]}")
     return raw_liked_songs
 
 # 2b. transform liked song raw data list into df
 # parse out data from Liked Songs' raw data
 def song_metadata_to_df(raw_songs):
-    printio('Transforming song raw data list into df\n')
+    printio('Transforming song raw data list into df')
     define_scope()
     # create empty df
     df = pd.DataFrame(columns = [
@@ -232,10 +232,10 @@ def add_audio_feats(df):
 #4. Add genre data
 # 4a. Get artist_uris -> get genres
 def get_genres(df):
-    printio('Getting genres\n')
+    printio('Getting genres')
     g = []
     artist_uris = df['artist_uri'].unique()
-    printio(f"{len(artist_uris)},  distinct artists")
+    printio(f"{len(artist_uris)} distinct artists")
     for i in range(0, len(artist_uris)):
         if (i/100).is_integer():
             printio(f"{i}/{len(artist_uris)} parsed")
@@ -250,7 +250,7 @@ def get_genres(df):
     # genres_df's artist_uri column stores a list of genres per artist uri
     genres_df = pd.DataFrame({'artist_uri': artist_uris, 'genre list': g})
     
-    printio('\ngenre_df')
+    printio('genre_df')
     display(genres_df.head())
     return genres_df
 
@@ -258,7 +258,7 @@ def get_genres(df):
 def explode_genres(df):
     genre_exploded_df = df.explode('genre list')
     
-    printio('\ngenre_exploded_df')
+    printio('genre_exploded_df')
     display(genre_exploded_df.head())
     return genre_exploded_df
 
@@ -281,20 +281,20 @@ def get_genre_counts(genre_exploded_df):
     # establish genre counts (which will determine score)
     genre_count_df = pd.DataFrame(genre_exploded_df['genre list'].value_counts()).reset_index()
     genre_count_df.columns = ['genre','genre count']
-    printio('\ngenre_count_df.head()')
+    printio('genre_count_df.head()')
     display(genre_count_df.head())
     return genre_count_df
 
 # Merge the genre counts with the song df and sum the genre column
 def establish_genre_score(genre_count_df, df):
-    printio('\nMerging genre counts with song_df')
+    printio('Merging genre counts with song_df')
     df = df.reset_index().merge(genre_count_df , on = 'genre',how = 'left')
     df.drop(columns=['genre'], inplace=True)
     display(df.head())
 
     groupby_cols = df.columns.to_list()[:-1]
     
-    printio('\nSumming genre column')
+    printio('Summing genre column')
     df = df.groupby(groupby_cols).sum().sort_values('genre count', ascending=False)
     df = df.rename({'genre count': 'genre score'}, axis=1).reset_index() 
     # reset index after summing - otherwise everything prior to sum will become index
@@ -479,9 +479,10 @@ def create_playlist_(json, methods=['GET', 'POST']):
         except:
             pred_like_playlist_name = 'test'
             genre_threshold = 20
-        printio(f"pred_like_playlist_name = ,{pred_like_playlist_name}")
-        printio(f"genre threshold = ,{genre_threshold}")
-        printio('Scope defined\n****PART 1: Get Liked Songs Dataframe****\n')
+        printio(f"pred_like_playlist_name = {pred_like_playlist_name}")
+        printio(f"genre threshold = {genre_threshold}")
+        printio('Scope defined')
+        printio('****PART 1: Get Liked Songs Dataframe****')
         raw_liked_song_list = get_raw_liked_song_list()
         liked_song_df = song_metadata_to_df(raw_liked_song_list)
         liked_song_df = add_audio_feats(liked_song_df)
@@ -490,7 +491,7 @@ def create_playlist_(json, methods=['GET', 'POST']):
         liked_song_df = add_genres(liked_song_df, genre_exploded_df)
         liked_genre_count_df = get_genre_counts(genre_exploded_df)
         liked_song_df = establish_genre_score(liked_genre_count_df, liked_song_df)
-        printio('\n****PART 2: Get Disliked Songs Dataframe****\n')
+        printio('****PART 2: Get Disliked Songs Dataframe****')
         define_scope()
         raw_disliked_song_list = get_raw_disliked_song_list()
         disliked_song_df = song_metadata_to_df(raw_disliked_song_list)
@@ -501,11 +502,11 @@ def create_playlist_(json, methods=['GET', 'POST']):
         disliked_genre_count_df = get_genre_counts(genre_exploded_df)
         disliked_genre_count_df['genre count'] = disliked_genre_count_df['genre count'] * -1
         disliked_song_df = establish_genre_score(disliked_genre_count_df, disliked_song_df)
-        printio('\n****PART 3: Combine liked and disliked songs into my_songs df and genre_count_df and save***\n')
+        printio('****PART 3: Combine liked and disliked songs into my_songs df and genre_count_df and save***')
         my_songs_df = combine_dfs_to_create_my_songs_df(liked_song_df,disliked_song_df,'.')
         genre_count_df = pd.concat([liked_genre_count_df, disliked_genre_count_df])
         #my_songs_df = pd.read_pickle("./my_songs.pkl")
-        printio('\n****PART 4: Get songs from featured playlists and score them based on genre****\n')
+        printio('****PART 4: Get songs from featured playlists and score them based on genre****')
         playlist_df = get_featured_playlist_uris('US',(pd.Timestamp.now()-timedelta(days=0)).strftime('%Y-%m-%dT%H:%M:%S.%Z'))
         raw_featured_playlist_songs_list = get_raw_featured_playlist_song_list(playlist_df)
         featured_playlist_song_df = song_metadata_to_df(raw_featured_playlist_songs_list)
