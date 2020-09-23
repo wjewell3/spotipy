@@ -23,7 +23,7 @@
   <!--div-->
   <body>
     <h2>Welcome to The Spotiplaylist Creator</h2>
-    <form action="" method="POST">
+    <form action="{{ request.path }}" method="POST">
         <p>1. What's do you want to call your new playlist?</p>
         <input type='text' class='username' placeholder="Playlist"/><br><br>
         <p>2. What genre score threshold do you want to use (default 20)?<br>
@@ -32,7 +32,6 @@
         <input type='submit'/><br><br>
     </form>
 
-    <h4 style='color: #ccc;font-size: 20px;'>No message yet..</h4>
     <div class="message_holder"></div>
     <!-- <div class="container" id="content">
       <div class="row">
@@ -69,7 +68,6 @@
           console.log( msg )
           // if( typeof msg.user_name !== 'undefined' ) {
           if( typeof msg.data !== 'undefined' ) {
-            $( 'h3' ).remove()
             $( 'div.message_holder' ).append('<div>'+msg.data+'</div>' )
             // $( 'h3' ).remove()
             // $( 'div.message_holder' ).append('<div><b style="color: #000">'+msg.user_name+'</b> '+msg.message+'</div>' )

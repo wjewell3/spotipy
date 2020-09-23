@@ -437,7 +437,7 @@ def api_callback():
 
 
 @app.route("/user_input")
-def user_input():
+def user_input(methods=['GET', 'POST']):
     return render_template("base.html")#, async_mode=socketio.async_mode)         
 
 # @socketio.on('my event')
@@ -450,7 +450,7 @@ def messageReceived(methods=['GET', 'POST']):
 
 #@socketio.on('message', namespace='create_playlist_')#, namespace='/create_playlist_'
 def printio(statement, methods=['GET', 'POST']):
-    return socketio.emit('my response', {'data': str(statement)}, callback=messageReceived)#, broadcast=True)#, namespace='/create_playlist_'
+    return socketio.emit('my response', {'data': str(statement)}, callback=messageReceived, broadcast=True)#, namespace='/create_playlist_'
 
 #@app.route("/create_playlist_")
 #@socketio.on('create playlist')#, namespace='create_playlist_')
