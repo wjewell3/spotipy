@@ -55,7 +55,7 @@ SHOW_DIALOG = True
 # def default_sigpipe():
 #     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-app = Flask(__name__, instance_relative_config=True)
+app = Flask(__name__)#, instance_relative_config=True)
 app.secret_key = 'blah'
 #cors = CORS(application, resources={r"/api/*": {"origins": "*"}})
 socketio = SocketIO(app)#, transports=['polling', 'websocket'], async_mode=None, async_handlers=True)
@@ -63,9 +63,9 @@ socketio = SocketIO(app)#, transports=['polling', 'websocket'], async_mode=None,
 def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')
 
-@socketio.on('message', namespace='/test')#, namespace='/create_playlist_'
-def printio(statement):
-    return socketio.emit('printio', {'data': str(statement)}, callback=messageReceived, broadcast=True)#, namespace='/create_playlist_'
+@socketio.on('message', namespace='create_playlist_')#, namespace='/create_playlist_'
+def printio(statement, methods=['GET', 'POST']):
+    return socketio.emit('printio', {'data': str(statement)}, callback=messageReceived)#, broadcast=True)#, namespace='/create_playlist_'
     
 
 import sys
