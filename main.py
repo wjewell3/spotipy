@@ -60,12 +60,7 @@ app.secret_key = 'blah'
 #cors = CORS(application, resources={r"/api/*": {"origins": "*"}})
 socketio = SocketIO(app)#, transports=['polling', 'websocket'], async_mode=None, async_handlers=True)
 
-def messageReceived(methods=['GET', 'POST']):
-    print('message was received!!!')
 
-@socketio.on('message', namespace='create_playlist_')#, namespace='/create_playlist_'
-def printio(statement, methods=['GET', 'POST']):
-    return socketio.emit('printio', {'data': str(statement)}, callback=messageReceived)#, broadcast=True)#, namespace='/create_playlist_'
     
 
 import sys
@@ -443,12 +438,27 @@ def api_callback():
 
 @app.route("/user_input")
 def user_input():
-    return render_template("base.html", async_mode=socketio.async_mode)         
+    return render_template("base.html")#, async_mode=socketio.async_mode)         
 
-@app.route("/create_playlist_")
-def create_playlist_():
-    playlist_name = request.args.get('playlist_name')
-    genre_score_thresh = request.args['genre_score_thresh']
+# @socketio.on('my event')
+# def handle_my_custom_event(json, methods=['GET', 'POST']):
+#     print('received my event: ' + str(json))
+#     socketio.emit('my response', json, callback=messageReceived)
+
+def messageReceived(methods=['GET', 'POST']):
+    print('message was received!!!')
+
+#@socketio.on('message', namespace='create_playlist_')#, namespace='/create_playlist_'
+def printio(statement, methods=['GET', 'POST']):
+    return socketio.emit('my response', {'data': str(statement)}, callback=messageReceived)#, broadcast=True)#, namespace='/create_playlist_'
+
+#@app.route("/create_playlist_")
+#@socketio.on('create playlist')#, namespace='create_playlist_')
+@socketio.on('my event')
+def create_playlist_(json, methods=['GET', 'POST']):
+    print('received my event: ' + str(json))
+    playlist_name = json['user_name'] #request.args.get('playlist_name')
+    genre_score_thresh = json['message'] #request.args['genre_score_thresh']
     if float(genre_score_thresh) <= 0:
         return """
         <html><body>

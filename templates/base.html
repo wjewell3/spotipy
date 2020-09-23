@@ -23,17 +23,17 @@
   <!--div-->
   <body>
     <h2>Welcome to The Spotiplaylist Creator</h2>
-    <form action="/create_playlist_">
+    <form action="" method="POST">
         <p>1. What's do you want to call your new playlist?</p>
-        <input type='text' name='playlist_name'><br><br>
+        <input type='text' class='username' placeholder="Playlist"/><br><br>
         <p>2. What genre score threshold do you want to use (default 20)?<br>
         (The higher the threshold score, the fewer songs you will get but the songs will be more relevant). </p>
-        <input type='text' name='genre_score_thresh'><br><br>
-        <input type='submit' value='Continue'><br><br>
+        <input type='text' class='message' placeholder="Genre Threshold"/><br><br>
+        <input type='submit'/><br><br>
     </form>
 
-    <h3 style='color: #ccc;font-size: 30px;'>No message yet..</h3>
-    <div class="print_statement_holder"></div>
+    <h4 style='color: #ccc;font-size: 20px;'>No message yet..</h4>
+    <div class="message_holder"></div>
     <!-- <div class="container" id="content">
       <div class="row">
           <p>Asynchronous page updates will appear here:</p>
@@ -49,11 +49,33 @@
     <script type=text/javascript charset="utf-8">
 
       var socket = io.connect('http://' + document.domain + ':' + location.port);// adding this breaks socketio output + '/test'
-            socket.on('printio', function(msg) {
-                console.log(msg)
-                $( 'div.print_statement_holder' ).append('<p>' + msg.data + '</p>')
-                //$('#log').append('<p>' + msg.data + '</p>');
-      });
+
+      socket.on( 'connect', function() {
+        // socket.emit( 'my event', {
+        //   data: 'User Connected'
+        // } )
+        var form = $( 'form' ).on( 'submit', function( e ) {
+          e.preventDefault()
+          let user_name = $( 'input.username' ).val()
+          let user_input = $( 'input.message' ).val()
+          socket.emit( 'my event', {
+            user_name : user_name,
+            message : user_input
+          } )
+          // $( 'input.message' ).val( '' ).focus()
+        } )
+      } )
+      socket.on('my response', function(msg) {
+          console.log( msg )
+          // if( typeof msg.user_name !== 'undefined' ) {
+          if( typeof msg.data !== 'undefined' ) {
+            $( 'h3' ).remove()
+            $( 'div.message_holder' ).append('<div>'+msg.data+'</div>' )
+            // $( 'h3' ).remove()
+            // $( 'div.message_holder' ).append('<div><b style="color: #000">'+msg.user_name+'</b> '+msg.message+'</div>' )
+          }
+          //$('#log').append('<p>' + msg.data + '</p>');
+      })
 
       // $(document).ready(function(){
       //     var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
