@@ -1,29 +1,109 @@
 <!DOCTYPE html>
-<title>Spotipy Playlist Form</title>
-<div>
+<!--https://getbootstrap.com/docs/4.3/getting-started/introduction/-->
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <style>
+    body {
+      /* border: 1px solid black; */
+      /* background-color: lightblue; */
+      padding-top: 20px;
+      padding-right: 20px;
+      padding-bottom: 20px;
+      padding-left: 20px;
+    }
+    </style>
+    <title>Spotipy Playlist Form</title>
+  </head>
+  <!--div-->
   <body>
-    <h2>Welcome to Will's Spotipy Playlist Creator</h2>
+    <h2>Welcome to The Spotiplaylist Creator</h2>
     <form action="/create_playlist_">
-        <p>What's do you want to call your new playlist?</p>
-        <input type='text' name='playlist_name'><br>
-        <p>What genre score threshold do you want to use (default 20)?<br>
-        The higher the threshold score, the fewer songs you will get but the songs will be more relevant. </p>
-        <input type='text' name='genre_score_thresh'><br>
-        <input type='submit' value='Continue'>
+        <p>1. What's do you want to call your new playlist?</p>
+        <input type='text' name='playlist_name'><br><br>
+        <p>2. What genre score threshold do you want to use (default 20)?<br>
+        (The higher the threshold score, the fewer songs you will get but the songs will be more relevant). </p>
+        <input type='text' name='genre_score_thresh'><br><br>
+        <input type='submit' value='Continue'><br><br>
     </form>
 
+    <h3 style='color: #ccc;font-size: 30px;'>No message yet..</h3>
     <div class="print_statement_holder"></div>
+    <!-- <div class="container" id="content">
+      <div class="row">
+          <p>Asynchronous page updates will appear here:</p>
+          <h3>Number list:</h3>
+          <div id="print_statement_holder">
+          </div> </#log -->
+    
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <!-- <script type="text/javascript" src="//code.jquery.com/jquery-3.3.1.min.js"></script> -->    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
-    <script type=text/javascript>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <script type=text/javascript charset="utf-8">
+
       var socket = io.connect('http://' + document.domain + ':' + location.port);
-      socket.on('message event', function(msg) {
-          console.log(msg)
-          $( 'div.print_statement_holder' ).append('<p>' + msg.data + '</p>')
-          //$('#log').append('<p>' + msg.data + '</p>');
+            socket.on('printio', function(msg) {
+                console.log(msg)
+                $( 'div.print_statement_holder' ).append('<p>' + msg.data + '</p>')
+                //$('#log').append('<p>' + msg.data + '</p>');
       });
+
+      // $(document).ready(function(){
+      //     var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+      //     socket.on('print_statement', function(msg) {
+      //         $('#log').append('<p>Received: ' + msg.data + '</p>');
+      //     });
+      // };
+
+      // $(document).ready(function () {
+      //   // Use a "/test" namespace.
+      //   // An application can open a connection on multiple namespaces, and
+      //   // Socket.IO will multiplex all those connections on a single
+      //   // physical channel. If you don't care about multiple channels, you
+      //   // can set the namespace to an empty string.
+      //   namespace = '/test';
+      //   // Connect to the Socket.IO server.
+      //   // The connection URL has the following format:
+      //   //     http[s]://<domain>:<port>[/<namespace>]
+      //   // import io from 'socket.io-client';
+      //   let socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace, {
+      //       forceNew: true,
+      //       timeout: 180000
+      //   });
+
+      // var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+
+      // socket.on('print_statement', function(msg) {
+      //     console.log(msg)
+      //     // if( typeof msg.user_name !== 'undefined' ) {
+      //     $( 'h3' ).remove()
+      //     $( 'div.print_statement_holder' ).append( '<div><b style="color: #000"><p>' + msg.data + '</p></b></div>' )
+
+          // }
+          //maintain a list of ten numbers
+          // if (numbers_received.length >= 10){
+          //     numbers_received.shift()
+          // }            
+          // numbers_received.push(msg.number);
+          // numbers_string = '';
+          // for (var i = 0; i < numbers_received.length; i++){
+          //     numbers_string = numbers_string + '<p>' + numbers_received[i].toString() + '</p>';
+          // }
+          // $('#log').html(numbers_string);
+          // $( 'div.print_statement_holder' ).append('<p>' + msg.data + '</p>')
+          // $( '<p>' + msg.data + '</p>' ).appendTo( ".print_statement_holder" )
+          //$('#log').append('<p>' + msg.data + '</p>');
+      // })
     </script>
+
   </body>
-  {% block body %}{% endblock %}
-</div>
+</html>
+  <!--{% block body %}{% endblock %}-->
+<!--/div-->

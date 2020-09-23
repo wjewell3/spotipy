@@ -51,8 +51,7 @@ import inspect
 import pickle
 from datetime import datetime, timedelta
 import subprocess
-from flask import Flask, render_template, redirect, request, session, make_response, session, Response, stream_with_context
-from flask_socketio import SocketIO, emit
+from config import CONFIG
 
 def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')

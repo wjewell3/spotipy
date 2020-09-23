@@ -1,3 +1,10 @@
+import eventlet
+eventlet.monkey_patch(
+    thread=False,
+    select=True,
+    socket=False
+)
+
 from flask import Flask, render_template, redirect, request, session, make_response, session, Response, stream_with_context, jsonify
 import spotipy
 import spotipy.util as util
@@ -5,29 +12,15 @@ import requests
 import os
 import sys
 import logging
-from flask_cors import CORS
+#from flask_cors import CORS
 import time
 import subprocess
-import signal
+#import signal
 import io
 import webbrowser
 from config import CONFIG
 #import create_playlist
 from flask_socketio import SocketIO, emit
-
-#async_mode = 'eventlet'
-
-#from eventlet import monkey_patch
-
-#monkey_patch()
-
-def default_sigpipe():
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-
-app = Flask(__name__)
-app.secret_key = 'blah'
-#cors = CORS(application, resources={r"/api/*": {"origins": "*"}})
-socketio = SocketIO(app)
 
 API_BASE = 'https://accounts.spotify.com'
 
@@ -57,8 +50,24 @@ REDIRECT_URI = CONFIG["env_variables"]['SPOTIPY_REDIRECT_URI']
 # Set this to True for testing but you probably want it set to False in production.
 SHOW_DIALOG = True
 
+#async_mode = 'eventlet'
 
-import os
+# def default_sigpipe():
+#     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
+app = Flask(__name__, instance_relative_config=True)
+app.secret_key = 'blah'
+#cors = CORS(application, resources={r"/api/*": {"origins": "*"}})
+socketio = SocketIO(app)#, transports=['polling', 'websocket'], async_mode=None, async_handlers=True)
+
+def messageReceived(methods=['GET', 'POST']):
+    print('message was received!!!')
+
+@socketio.on('message', namespace='/test')#, namespace='/create_playlist_'
+def printio(statement):
+    return socketio.emit('printio', {'data': str(statement)}, callback=messageReceived, broadcast=True)#, namespace='/create_playlist_'
+    
+
 import sys
 import json
 import spotipy
@@ -80,20 +89,14 @@ import subprocess
 #from flask import Flask, render_template, redirect, request, session, make_response, session, Response, stream_with_context
 #from flask_socketio import SocketIO, emit
 
-def messageReceived(methods=['GET', 'POST']):
-    print('message was received!!!')
 
-@socketio.on('message')#, namespace='/create_playlist_'
-def printio(statement):
-    return socketio.emit('message event', {'data': str(statement)}, callback=messageReceived#, namespace='/create_playlist_'
-    )
 
 def define_scope():
     global username, scope, token, sp, user, headers
-    username = os.environ['SPOTIPY_USERNAME']
-    client_id = os.environ['SPOTIPY_CLIENT_ID']
-    client_secret = os.environ['SPOTIPY_CLIENT_SECRET']
-    redirect_uri = 'http://google.com/'
+    username = CONFIG["env_variables"]['SPOTIPY_USERNAME']
+    client_id = CONFIG["env_variables"]['SPOTIPY_CLIENT_ID']
+    client_secret = CONFIG["env_variables"]['SPOTIPY_CLIENT_SECRET']
+    redirect_uri = CONFIG["env_variables"]['SPOTIPY_REDIRECT_URI']
     scope = '''
     playlist-modify-private 
     playlist-modify-public 
@@ -440,7 +443,7 @@ def api_callback():
 
 @app.route("/user_input")
 def user_input():
-    return render_template("base.html")         
+    return render_template("base.html", async_mode=socketio.async_mode)         
 
 @app.route("/create_playlist_")
 def create_playlist_():
@@ -466,7 +469,6 @@ def create_playlist_():
         except:
             pred_like_playlist_name = 'test'
             genre_threshold = 20
-        print('made it this far - genre_thresh=',genre_threshold)
         printio(f"pred_like_playlist_name = ,{pred_like_playlist_name}")
         printio(f"genre threshold = ,{genre_threshold}")
         printio('Scope defined\n****PART 1: Get Liked Songs Dataframe****\n')
@@ -542,7 +544,7 @@ def create_playlist_():
         #webbrowser.open('https://spotify-playlist-290119.uc.r.appspot.com:8081/',new=0)
         #subprocess.run('open localhost:8082/', shell=True)
     #return webbrowser.open('http://0.0.0.0:8082/',new=0)
-    #return 'ok'
+    return 'ok'
 
 if __name__ == '__main__':
     socketio.run(app)
