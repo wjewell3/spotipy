@@ -97,48 +97,7 @@ import subprocess
 
 token = '0'
 
-def define_scope():
-    global username, scope, token, sp, user, headers
-    username = CONFIG["env_variables"]['SPOTIPY_USERNAME']
-    client_id = CONFIG["env_variables"]['SPOTIPY_CLIENT_ID']
-    client_secret = CONFIG["env_variables"]['SPOTIPY_CLIENT_SECRET']
-    redirect_uri = CONFIG["env_variables"]['SPOTIPY_REDIRECT_URI']
-    scope = '''
-    playlist-modify-private 
-    playlist-modify-public 
-    playlist-read-collaborative 
-    playlist-read-private
-    user-follow-modify 
-    user-follow-read 
-    user-library-modify 
-    user-library-read 
-    user-modify-playback-state 
-    user-read-currently-playing 
-    user-read-email 
-    user-read-playback-state 
-    user-read-private 
-    user-read-recently-played 
-    user-top-read'''
-    if token == '0':
-        token = util.prompt_for_user_token(username=username, 
-                                        scope=scope, 
-                                        client_id=client_id, 
-                                        client_secret=client_secret, 
-                                        redirect_uri=redirect_uri,
-                                        #cache_path=f".cache-{username}"
-                                        )
-    # except (AttributeError, JSONDecodeError):
-    #     os.remove(f".cache-{username}")
-    #     token = util.prompt_for_user_token(username=username, 
-    #                                     scope=scope, 
-    #                                     client_id=client_id, 
-    #                                     client_secret=client_secret, 
-    #                                     redirect_uri=redirect_uri,
-    #                                     cache_path=f".cache-{username}")
-    sp = spotipy.Spotify(auth=token)
-    user = sp.current_user()
-    headers = {'Authorization': "Bearer {}".format(token)}
-    return 'OK'
+
 
 # 2. Get raw Spotify data of Liked (i.e. Hearted) songs into a dataframe
 # 2a. Get raw data of liked songs into a list
@@ -437,6 +396,7 @@ def verify():
 # Spotify returns access and refresh tokens
 @app.route("/api_callback")
 def api_callback():
+    global token
     session.clear()
     code = request.args.get('code')
 
@@ -451,13 +411,41 @@ def api_callback():
 
     res_body = res.json()
     print(res.json())
-    session["toke"] = res_body.get("access_token")
-    return redirect("user_input")
+    token = res_body.get("access_token")
+    return redirect("define_scope")
 
+@app.route("/define_scope")
+def define_scope():
+    global username, scope, token, sp, user, headers
+    #username = CONFIG["env_variables"]['SPOTIPY_USERNAME']
+    client_id = CONFIG["env_variables"]['SPOTIPY_CLIENT_ID']
+    client_secret = CONFIG["env_variables"]['SPOTIPY_CLIENT_SECRET']
+    redirect_uri = CONFIG["env_variables"]['SPOTIPY_REDIRECT_URI']
+    scope = '''
+    playlist-modify-private 
+    playlist-modify-public 
+    playlist-read-collaborative 
+    playlist-read-private
+    user-follow-modify 
+    user-follow-read 
+    user-library-modify 
+    user-library-read 
+    user-modify-playback-state 
+    user-read-currently-playing 
+    user-read-email 
+    user-read-playback-state 
+    user-read-private 
+    user-read-recently-played 
+    user-top-read'''
+    sp = spotipy.Spotify(auth=token)
+    user = sp.current_user()
+    headers = {'Authorization': "Bearer {}".format(token)}
+    printio(f"{user}")
+    return redirect("user_input")
 
 @app.route("/user_input")
 def user_input(methods=['GET', 'POST']):
-    return render_template("base.html")#, async_mode=socketio.async_mode)         
+    return render_template("base.html")
 
 # @socketio.on('my event')
 # def handle_my_custom_event(json, methods=['GET', 'POST']):
@@ -470,7 +458,7 @@ def messageReceived(methods=['GET', 'POST']):
 #@socketio.on('message', namespace='create_playlist_')#, namespace='/create_playlist_'
 def printio(statement, methods=['GET', 'POST']):
     print(statement)
-    socketio.sleep(0)
+    socketio.sleep(0.1)
     return socketio.emit('my response', {'data': str(statement)}, callback=messageReceived, broadcast=True)#, namespace='/create_playlist_'
 
 #@app.route("/create_playlist_")
@@ -493,6 +481,7 @@ def create_playlist_(json, methods=['GET', 'POST']):
         </body></html>"""
     else: 
         #return 'ok'
+        printio('Make sure the below user is yourself and not Will Jewell')
         define_scope()
         try:
             pred_like_playlist_name = playlist_name
