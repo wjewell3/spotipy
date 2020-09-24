@@ -59,7 +59,9 @@ app = Flask(__name__)#, instance_relative_config=True)
 app.secret_key = 'blah'
 #cors = CORS(application, resources={r"/api/*": {"origins": "*"}})
 socketio = SocketIO(app, 
-transports=['polling', 'websocket'], 
+transports=[
+    #'polling',
+    'websocket'], 
 async_mode=None, 
 #async_handlers=True, 
 engineio_logger=True 
