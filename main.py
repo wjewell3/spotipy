@@ -1,8 +1,8 @@
 import eventlet
 eventlet.monkey_patch(
-    thread=False,
-    select=True,
-    socket=False
+    thread=False
+    # ,select=True
+    ,socket=False
 )
 
 from flask import Flask, render_template, redirect, request, session, make_response, session, Response, stream_with_context, jsonify
@@ -58,7 +58,14 @@ SHOW_DIALOG = True
 app = Flask(__name__)#, instance_relative_config=True)
 app.secret_key = 'blah'
 #cors = CORS(application, resources={r"/api/*": {"origins": "*"}})
-socketio = SocketIO(app, transports=['polling', 'websocket'], async_mode='threading', async_handlers=True, engineio_logger=True, manage_session=True)
+socketio = SocketIO(app, 
+transports=['polling', 'websocket'], 
+async_mode=None, 
+#async_handlers=True, 
+engineio_logger=True 
+#manage_session=True
+)
+#previously async_mode='threading', also tempting to use 'eventlet'
 
 
     
