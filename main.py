@@ -453,7 +453,7 @@ def printio(statement, methods=['GET', 'POST']):
     return socketio.emit('my response', {'data': str(statement)}, callback=messageReceived, broadcast=True)#, namespace='/create_playlist_'
 
 #@app.route("/create_playlist_")
-#@socketio.on('create playlist')#, namespace='create_playlist_')
+#@socketio.on('create playlist')#, namespace='/test')
 @socketio.on('my event')
 def create_playlist_(json, methods=['GET', 'POST']):
     print('received my event: ' + str(json))
