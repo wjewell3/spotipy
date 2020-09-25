@@ -27,9 +27,8 @@
     <form action="{{ request.path }}" method="POST">
         <p>1. What's do you want to call your new playlist?</p>
         <input type='text' class='username' placeholder="Freshness"/><br><br>
-        <p>2. On a scale of 0 to 100, how open are you to new music?<br>
-        (i.e. If you select 0, you will get a very small playlist with songs that very strongly correlate to your liked songs)</p>
-        <input type='text' class='message' placeholder="50"/><br><br>
+        <p>2. On a scale of 1 to 10, how many songs do you want in your playlist?<br>
+        <input type='text' class='message' placeholder="1"/><br><br>
         <p>3. What year (past or present) would you like "featured playlist" songs from?</p><br>
         <input type='text' class='year' placeholder={{ now.year }}><br><br>
         <input type='submit'/><br><br>

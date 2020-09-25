@@ -321,9 +321,10 @@ def create_playlist(pred_like_playlist_name, df, genre_score_threshold):
     playlist_uri = get_playlist_uris(playlists_raw).loc[playlists_df.index == pred_like_playlist_name,'playlist_uri'][0].split(':')[2]
     # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.rank.html
     df['pct_rank'] = df['genre score'].rank(pct=True)
+    df = df.drop_duplicates()
     display(df.head())
     print((1-(1-1/((int(genre_score_threshold)/50)+1.1))))
-    uri_list = df.loc[:,df['pct_rank'] >= (1-(1-1/((int(genre_score_threshold)/50)+1.1)))].reset_index()['uri'].to_list()
+    uri_list = df.loc[df['pct_rank'] >= (1-(1-1/((int(genre_score_threshold)/50)+1.1)))].reset_index()['uri'].to_list()
     num_songs_to_add = len(uri_list)
     # add songs
     for i in range(int(math.ceil(num_songs_to_add/100.0))):
@@ -413,7 +414,7 @@ def create_playlist_(json, methods=['GET', 'POST']):
     #     </form>
     #     </body></html>"""
     # else: 
-    define_scope()
+    # define_scope()
     try:
         pred_like_playlist_name = playlist_name
     except:
@@ -421,7 +422,7 @@ def create_playlist_(json, methods=['GET', 'POST']):
     try:
         genre_threshold = genre_score_thresh
     except:
-        genre_threshold = 50
+        genre_threshold = 5
     printio(f"pred_like_playlist_name = {pred_like_playlist_name}")
     printio(f"genre threshold = {genre_threshold}")
     printio(f"featured playlist year = {featured_playlist_year}")
@@ -462,10 +463,11 @@ def create_playlist_(json, methods=['GET', 'POST']):
     #my_songs_df = pd.read_pickle("./my_songs.pkl")
     printio('')
     printio('****PART 4 of 4: Get songs from featured playlists and score them based on genre****')
+    printio(f"Creating featured playlist for this timestamp: {(pd.Timestamp.now()-timedelta(days=year_delta*365)).strftime('%Y-%m-%dT%H:%M:%S.%Z')}")
     playlist_df = get_featured_playlist_uris('US',(pd.Timestamp.now()-timedelta(days=year_delta*365)).strftime('%Y-%m-%dT%H:%M:%S.%Z'))
+    printio(f"{playlist_df}")
     raw_featured_playlist_songs_list = get_raw_featured_playlist_song_list(playlist_df)
     featured_playlist_song_df = song_metadata_to_df(raw_featured_playlist_songs_list)
-    featured_playlist_song_df
     #featured_playlist_song_df = add_audio_feats(featured_playlist_song_df)
     genre_df = get_genres(featured_playlist_song_df)
     genre_exploded_df = explode_genres(genre_df)
