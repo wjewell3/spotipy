@@ -20,112 +20,51 @@
     </style>
     <title>Spotipy Playlist Form</title>
   </head>
-  <!--div-->
   <body>
     <h2>Welcome to The Spotiplaylist Creator</h2>
+    <h5>Create a super fresh Spotify playlist based on your liked (i.e. hearted) songs.<br> 
+      Caveat: Without liked songs, this tool will not work. </h5><br>
     <form action="{{ request.path }}" method="POST">
         <p>1. What's do you want to call your new playlist?</p>
-        <input type='text' class='username' placeholder="Playlist"/><br><br>
-        <p>2. What genre score threshold do you want to use (default 20)?<br>
-        (The higher the threshold score, the fewer songs you will get but the songs will be more relevant). </p>
-        <input type='text' class='message' placeholder="Genre Threshold"/><br><br>
+        <input type='text' class='username' placeholder="Freshness"/><br><br>
+        <p>2. On a scale of 0 to 100, how open are you to new music?<br>
+        (i.e. If you select 0, you will get a very small playlist with songs that very strongly correlate to your liked songs)</p>
+        <input type='text' class='message' placeholder="50"/><br><br>
+        <p>3. What year (past or present) would you like "featured playlist" songs from?</p><br>
+        <input type='text' class='year' placeholder={{ now.year }}><br><br>
         <input type='submit'/><br><br>
     </form>
 
     <div class="message_holder"></div>
-    <!-- <div class="container" id="content">
-      <div class="row">
-          <p>Asynchronous page updates will appear here:</p>
-          <h3>Number list:</h3>
-          <div id="print_statement_holder">
-          </div> </#log -->
-    
-
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <!-- <script type="text/javascript" src="//code.jquery.com/jquery-3.3.1.min.js"></script>     -->
+  
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <script type=text/javascript charset="utf-8">
 
       var socket = io.connect()
-      // 'http://' + document.domain + ':' + location.port)
-      // +'/test');// adding this breaks socketio output + '/test'
 
       socket.on( 'connect', function() {
-        // socket.emit( 'my event', {
-        //   data: 'User Connected'
-        // } )
         var form = $( 'form' ).on( 'submit', function( e ) {
           e.preventDefault()
           let user_name = $( 'input.username' ).val()
           let user_input = $( 'input.message' ).val()
+          let year = $( 'input.year' ).val()
           socket.emit( 'my event', {
             user_name : user_name,
-            message : user_input
+            message : user_input,
+            featured_playlist_year : year
           } )
-          // $( 'input.message' ).val( '' ).focus()
         } )
       } )
       socket.on('my response', function(msg) {
           console.log( msg )
-          // if( typeof msg.user_name !== 'undefined' ) {
           if( typeof msg.data !== 'undefined' ) {
             $( 'div.message_holder' ).append('<div>'+msg.data+'</div>' )
-            // $( 'h3' ).remove()
-            // $( 'div.message_holder' ).append('<div><b style="color: #000">'+msg.user_name+'</b> '+msg.message+'</div>' )
           }
-          //$('#log').append('<p>' + msg.data + '</p>');
       })
 
-      // $(document).ready(function(){
-      //     var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
-      //     socket.on('print_statement', function(msg) {
-      //         $('#log').append('<p>Received: ' + msg.data + '</p>');
-      //     });
-      // };
-
-      // $(document).ready(function () {
-      //   // Use a "/test" namespace.
-      //   // An application can open a connection on multiple namespaces, and
-      //   // Socket.IO will multiplex all those connections on a single
-      //   // physical channel. If you don't care about multiple channels, you
-      //   // can set the namespace to an empty string.
-      //   namespace = '/test';
-      //   // Connect to the Socket.IO server.
-      //   // The connection URL has the following format:
-      //   //     http[s]://<domain>:<port>[/<namespace>]
-      //   // import io from 'socket.io-client';
-      //   let socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace, {
-      //       forceNew: true,
-      //       timeout: 180000
-      //   });
-
-      // var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
-
-      // socket.on('print_statement', function(msg) {
-      //     console.log(msg)
-      //     // if( typeof msg.user_name !== 'undefined' ) {
-      //     $( 'h3' ).remove()
-      //     $( 'div.print_statement_holder' ).append( '<div><b style="color: #000"><p>' + msg.data + '</p></b></div>' )
-
-          // }
-          //maintain a list of ten numbers
-          // if (numbers_received.length >= 10){
-          //     numbers_received.shift()
-          // }            
-          // numbers_received.push(msg.number);
-          // numbers_string = '';
-          // for (var i = 0; i < numbers_received.length; i++){
-          //     numbers_string = numbers_string + '<p>' + numbers_received[i].toString() + '</p>';
-          // }
-          // $('#log').html(numbers_string);
-          // $( 'div.print_statement_holder' ).append('<p>' + msg.data + '</p>')
-          // $( '<p>' + msg.data + '</p>' ).appendTo( ".print_statement_holder" )
-          //$('#log').append('<p>' + msg.data + '</p>');
-      // })
     </script>
 
   </body>
 </html>
   <!--{% block body %}{% endblock %}-->
-<!--/div-->
