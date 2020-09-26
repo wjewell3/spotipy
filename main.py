@@ -61,7 +61,7 @@ def messageReceived(methods=['GET', 'POST']):
     print('message was received!!!')
 
 def printio(statement, methods=['GET', 'POST']):
-    socketio.sleep(0.1)
+    socketio.sleep(0.15)
     return socketio.emit('my response', {'data': str(statement)}, callback=messageReceived, broadcast=True)
 
 def req(url,headers):
