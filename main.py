@@ -179,7 +179,7 @@ def get_genres(df):
         genres = request['genres']
         printio (f"{i}:{artist}:{genres}")
         g.append(genres)
-        socketio.sleep(0)
+        socketio.sleep(0.1)
 
     genres_df = pd.DataFrame({'artist_uri': artist_uris, 'genre list': g})
     display(genres_df.head())
@@ -308,7 +308,7 @@ def get_raw_featured_playlist_song_list(df):
 
     return raw_featured_songs
 
-def create_playlist(pred_like_playlist_name, df, genre_score_threshold):
+def create_playlist(pred_like_playlist_name, df):
     # create playlist
     define_scope()
     payload = {"name": pred_like_playlist_name}
@@ -323,8 +323,8 @@ def create_playlist(pred_like_playlist_name, df, genre_score_threshold):
     df['pct_rank'] = df['genre score'].rank(pct=True)
     df = df.drop_duplicates()
     display(df.head())
-    print((1-(1-1/((int(genre_score_threshold)/50)+1.1))))
-    uri_list = df.loc[df['pct_rank'] >= (1-(1-1/((int(genre_score_threshold)/50)+1.1)))].reset_index()['uri'].to_list()
+    # print((1-(1-1/((int(genre_score_threshold)/50)+1.1))))
+    uri_list = df.loc[df['pct_rank'] >= 0.95].reset_index()['uri'].to_list()
     num_songs_to_add = len(uri_list)
     # add songs
     for i in range(int(math.ceil(num_songs_to_add/100.0))):
@@ -395,13 +395,10 @@ def user_input(methods=['GET', 'POST']):
 @socketio.on('my event')
 def create_playlist_(json, methods=['GET', 'POST']):
     print('received my event: ' + str(json))
-    playlist_name = json['user_name'] 
-    genre_score_thresh = json['message'] 
-    try:
-        featured_playlist_year = json['featured_playlist_year'] 
-    except:
-        featured_playlist_year = str(datetime.now().year)
-    year_delta = datetime.now().year - int(featured_playlist_year)
+    pred_like_playlist_name = json['user_name'] 
+    # genre_score_thresh = json['message'] 
+    # featured_playlist_year = json['featured_playlist_year'] 
+    # year_delta = datetime.now().year - int(featured_playlist_year)
     # if float(genre_score_thresh) <= 0:
     #     return """
     #     <html><body>
@@ -415,17 +412,14 @@ def create_playlist_(json, methods=['GET', 'POST']):
     #     </body></html>"""
     # else: 
     # define_scope()
-    try:
-        pred_like_playlist_name = playlist_name
-    except:
-        pred_like_playlist_name = 'test'
-    try:
-        genre_threshold = genre_score_thresh
-    except:
-        genre_threshold = 5
+    # try:
+    #     genre_threshold = genre_score_thresh
+    # except:
+    #     genre_threshold = 5
     printio(f"pred_like_playlist_name = {pred_like_playlist_name}")
-    printio(f"genre threshold = {genre_threshold}")
-    printio(f"featured playlist year = {featured_playlist_year}")
+    # printio(f"genre threshold = {genre_threshold}")
+    # printio(f"featured playlist year = {featured_playlist_year} ({year_delta} years ago)")
+
     printio('Scope defined')
     printio('')
     printio('****PART 1 of 4: Get Liked Songs Dataframe****')
@@ -463,9 +457,9 @@ def create_playlist_(json, methods=['GET', 'POST']):
     #my_songs_df = pd.read_pickle("./my_songs.pkl")
     printio('')
     printio('****PART 4 of 4: Get songs from featured playlists and score them based on genre****')
-    printio(f"Creating featured playlist for this timestamp: {(pd.Timestamp.now()-timedelta(days=year_delta*365)).strftime('%Y-%m-%dT%H:%M:%S.%Z')}")
-    playlist_df = get_featured_playlist_uris('US',(pd.Timestamp.now()-timedelta(days=year_delta*365)).strftime('%Y-%m-%dT%H:%M:%S.%Z'))
-    printio(f"{playlist_df}")
+    printio(f"Creating featured playlist songs for: {(pd.Timestamp.now()-timedelta(days=0*365)).strftime('%Y-%m-%dT%H:%M:%S.%Z')}")
+    playlist_df = get_featured_playlist_uris('US',(pd.Timestamp.now()-timedelta(days=0*365)).strftime('%Y-%m-%dT%H:%M:%S.%Z'))
+    # printio(f"{display(playlist_df)}")
     raw_featured_playlist_songs_list = get_raw_featured_playlist_song_list(playlist_df)
     featured_playlist_song_df = song_metadata_to_df(raw_featured_playlist_songs_list)
     #featured_playlist_song_df = add_audio_feats(featured_playlist_song_df)
@@ -473,7 +467,7 @@ def create_playlist_(json, methods=['GET', 'POST']):
     genre_exploded_df = explode_genres(genre_df)
     featured_playlist_song_df = add_genres(featured_playlist_song_df, genre_exploded_df)
     featured_playlist_song_df = establish_genre_score(genre_count_df, featured_playlist_song_df)
-    create_playlist(pred_like_playlist_name, featured_playlist_song_df, genre_threshold)
+    create_playlist(pred_like_playlist_name, featured_playlist_song_df)
     printio('')
     printio('****Complete! Check Spotify to see if playlist was filled with songs.****')
     return 'ok'

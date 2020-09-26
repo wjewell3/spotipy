@@ -21,17 +21,18 @@
     <title>Spotipy Playlist Form</title>
   </head>
   <body>
-    <h2>Welcome to The Spotiplaylist Creator</h2>
-    <h5>Create a super fresh Spotify playlist based on your liked (i.e. hearted) songs.<br> 
-      Caveat: Without liked songs, this tool will not work. </h5><br>
+    <h2>Pythonify - A Spotify Playlist Creator</h2>
+    <h6>Leverage the programming language, Python, to create a personalized Spotify playlist based on your liked (i.e. hearted) songs.</h6>
+    <p>Caveat: without liked songs, this tool will not work. </p>
     <form action="{{ request.path }}" method="POST">
-        <p>1. What's do you want to call your new playlist?</p>
-        <input type='text' class='username' placeholder="Freshness"/><br><br>
-        <p>2. On a scale of 1 to 10, how many songs do you want in your playlist?<br>
-        <input type='text' class='message' placeholder="1"/><br><br>
-        <p>3. What year (past or present) would you like "featured playlist" songs from?</p><br>
-        <input type='text' class='year' placeholder={{ now.year }}><br><br>
+        <strong>New Playlist Name:</strong><br>
+        <input type='text' class='username' placeholder="FreshJams"/><br><br>
+        <!-- <p>2. On a scale of 1 to 10, how many songs do you want in your playlist?<br>
+        <input type='text' class='message' placeholder="1"/><br><br> -->
+        <!-- <p>2. What year (past or present) would you like "featured playlist" songs from?</p><br>
+        <input type='text' class='year' placeholder={{ now.year }}><br><br-->
         <input type='submit'/><br><br>
+    
     </form>
 
     <div class="message_holder"></div>
@@ -46,12 +47,12 @@
         var form = $( 'form' ).on( 'submit', function( e ) {
           e.preventDefault()
           let user_name = $( 'input.username' ).val()
-          let user_input = $( 'input.message' ).val()
-          let year = $( 'input.year' ).val()
+          // let user_input = $( 'input.message' ).val()
+          // let year = $( 'input.year' ).val()
           socket.emit( 'my event', {
             user_name : user_name,
-            message : user_input,
-            featured_playlist_year : year
+            // message : user_input,
+            // featured_playlist_year : year
           } )
         } )
       } )
