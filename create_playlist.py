@@ -62,9 +62,9 @@ def printio(statement):
 
 def define_scope():
     global username, scope, token, sp, user, headers
-    username = os.environ['SPOTIPY_USERNAME']
-    client_id = os.environ['SPOTIPY_CLIENT_ID']
-    client_secret = os.environ['SPOTIPY_CLIENT_SECRET']
+    username = os.environ['jgkosh']
+    client_id = os.environ['e33ee6d1e37f461bab35fef8234504fb']
+    client_secret = os.environ['21c57f8312784c66aa490f6f5f7e32aa']
     redirect_uri = 'http://google.com/'
     scope = '''
     playlist-modify-private 
