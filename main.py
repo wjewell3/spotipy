@@ -5,6 +5,7 @@ from flask import Flask, render_template, redirect, request, session, make_respo
 from flask_socketio import SocketIO, emit
 import spotipy
 import spotipy.util as util
+from spotipy.oauth2 import SpotifyOAuth
 
 from config import CONFIG
 from datetime import datetime, timedelta
@@ -416,7 +417,7 @@ def create_playlist_(json, methods=['GET', 'POST']):
     #     genre_threshold = genre_score_thresh
     # except:
     #     genre_threshold = 5
-    printio(f"pred_like_playlist_name = {pred_like_playlist_name}")
+    printio(f"Your new playlist: {pred_like_playlist_name}")
     # printio(f"genre threshold = {genre_threshold}")
     # printio(f"featured playlist year = {featured_playlist_year} ({year_delta} years ago)")
 
