@@ -6,6 +6,7 @@ from flask_socketio import SocketIO, emit
 import spotipy
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyOAuth
+#import redis
 
 from config import CONFIG
 from datetime import datetime, timedelta
@@ -52,10 +53,12 @@ app = Flask(__name__)
 app.secret_key = 'blah'
 socketio = SocketIO(app, 
     transports=['polling','websocket'], 
-    async_mode=None, 
+    async_mode='eventlet', 
     engineio_logger=True,
     ping_interval = 10000, 
-    ping_timeout= 5000
+    ping_timeout= 30000,
+    async_handlers=True
+    #message_queue='redis://'
     )
 
 def messageReceived(methods=['GET', 'POST']):
@@ -176,9 +179,12 @@ def get_genres(df):
         if (i/100).is_integer():
             printio(f"{i}/{len(artist_uris)} parsed")
         request = req(url = f"https://api.spotify.com/v1/artists/{artist_uris[i]}",headers=headers)
-        artist = request['name']
+        # artist = request['name']
         genres = request['genres']
-        printio (f"{i}:{artist}:{genres}")
+        # try:
+        #     printio(f"{i}:{artist}:{genres}")
+        # except:
+        #     printio('skipping...')
         g.append(genres)
         socketio.sleep(0.1)
 
@@ -436,6 +442,7 @@ def create_playlist_(json, methods=['GET', 'POST']):
     printio(f"This script adds 'Spotify featured playlist' songs to your new playlist, {pred_like_playlist_name}, if they share genre(s) with your liked artists/songs")
     printio('Last revised Sept. 28, 2020 by Will Jewell')
     printio('Source code: https://github.com/wjewell3/spotipy')
+    printio('Still in beta testing - known issue: updates stop showing up on webpage even with script continuing to run')
     define_scope()
     # printio(f"genre threshold = {genre_threshold}")
     # printio(f"featured playlist year = {featured_playlist_year} ({year_delta} years ago)")

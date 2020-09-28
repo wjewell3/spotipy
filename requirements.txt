@@ -21,3 +21,4 @@ gunicorn==19.9.0
 # websocket-client==0.48.0
 python-engineio==2.2.0
 python-socketio==2.0.0
+#redis

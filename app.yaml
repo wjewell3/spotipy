@@ -1,6 +1,6 @@
 runtime: python38 # or python37 for Python 3.7
 #env: flex
-entrypoint: gunicorn -b :$PORT main:app --worker-class eventlet -w 1
+entrypoint: gunicorn -b :$PORT main:app -k eventlet -w 1 #--worker-class
 
 instance_class: F4
 
