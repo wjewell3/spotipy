@@ -1,10 +1,7 @@
 # PyMuse
-Analyze your Spotify top artists to create a dynamic, personalized playlist. 
-
-### Prerequisite: 
-You must have a [Spotify account](https://accounts.spotify.com/en/login?continue=https).
-
-### Audience: Those interested in music and learning Python
+Objective: Analyze your Spotify top artists to create a dynamic, personalized playlist  
+Audience: Those interested in music and learning Python  
+Prerequisite: You must have a [Spotify account](https://accounts.spotify.com/en/login?continue=https)  
 
 #### Go [here](https://spotify-playlist-290119.uc.r.appspot.com/) to create a Spotify playlist and then ...
  
