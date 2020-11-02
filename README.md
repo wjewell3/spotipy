@@ -22,8 +22,8 @@
         - Type ```git clone https://github.com/wjewell3/spotipy.git```
         - Step into the repo. Type ```cd spotipy```
     - Install the Python dependendencies
-        - Type ```pip install -r spotipy/requirements.txt```
-    - Launch a Jupyter Notebook 
-        - This is an interactive notebook to run code and see the outputs in-line
+        - Type ```pip install -r requirements.txt```
+    - Launch Jupyter Notebook 
+        - A Jupyter Notebook is an interactive notebook to run code and see the outputs in-line
         - Type ```jupyter notebook```
     - Click on "Create Spotify Playlist Using Python.ipynb" to open the notebook and have fun!
