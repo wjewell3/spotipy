@@ -6,9 +6,9 @@ You must have a [Spotify account](https://accounts.spotify.com/en/login?continue
 
 #### Go [here](https://spotify-playlist-290119.uc.r.appspot.com/) to quickly create a Spotify playlist and then ...
  
-### Run the code yourself in a Jupyter Notebook! 
+### Run the code yourself in a Jupyter Notebook!
 
-1. [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) (if you don't already have it).
+1. [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
     - Use Git to save work at checkpoints and share your work 
 2. Open Terminal (Mac) or CMD (Windows)
     - Navigate to a folder on your machine where you want to download the Git repo (i.e. this project). 
