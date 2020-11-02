@@ -8,18 +8,19 @@ You must have a [Spotify account](https://accounts.spotify.com/en/login?continue
  
 ### Run the code yourself in a Jupyter Notebook! 
 
-1. [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if you don't already have it.
+1. [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) (if you don't already have it).
     - Use Git to save work at checkpoints and share your work 
 2. Open Terminal (Mac) or CMD (Windows)
-    - Navigate to a folder where you want to download the git repo (i.e. this project). 
-        - E.g. If you want to download to your Documents folder:
+    - Navigate to a folder on your machine where you want to download the Git repo (i.e. this project). 
+        - E.g. If you want to download to your "Documents" folder:
             - Type ```cd C:\Users\your_computer_name\Documents``` or ```cd /Users/your_computer_name/Downloads```
-    - Next install the git repo into your chosen folder:
+    - Next install the Git repo into your chosen folder:
         - Type ```git clone https://github.com/wjewell3/spotipy.git```
-    - Install Python 3.7.3 (other versions may not work, but you may get lucky!)
-        - For Macs, check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
-        - For Windows/PCs, you can download Python 3.7.3 [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64-webinstall.exe)
-            - Optional: If you want to manage multiple versions of Python on your Windows machine, check out pyenv-win [here](https://github.com/pyenv-win/pyenv-win)
+    - Install Python 3.7.3
+        - Other versions may not work... but you may get lucky!
+            -- For Macs, check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
+            -- For Windows/PCs, you can download Python 3.7.3 [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64-webinstall.exe)
+                -- Optional: If you want to manage multiple versions of Python on your Windows machine, check out pyenv-win [here](https://github.com/pyenv-win/pyenv-win)
     - Next install the Python dependendencies
         - Type ```pip install -r spotipy/requirements.txt```
     - Launch a jupyter notebook - this is an interactive notebook to run code and see the outputs inline
