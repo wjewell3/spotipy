@@ -5,9 +5,9 @@ Analyze your liked and/or disliked Spotify songs to create a dynamic, personaliz
 You must have a [Spotify account](https://accounts.spotify.com/en/login?continue=https).
 
 To run code yourself in Jupyter Notebook:
-- [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+1. [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
         Use Git to save work at checkpoints and share your work 
-- Open Terminal (Mac) or CMD (Windows)
+2. Open Terminal (Mac) or CMD (Windows)
     - Navigate to a folder where you want to download the git repository. 
         - E.g. If you want to download to your Documents folder:
         - Type ```cd C:\Users\your_computer_name\Documents``` or ```cd /Users/your_computer_name/Downloads```
