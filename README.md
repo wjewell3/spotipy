@@ -3,7 +3,7 @@ Analyze your liked and/or disliked Spotify songs to create a dynamic, personaliz
 
 ## Prerequisite: 
 You must have a [Spotify account](https://accounts.spotify.com/en/login?continue=https).
-'''
+```
 To run code yourself in Jupyter Notebook:
 1. Install Git (https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
         Use Git to save work at checkpoints and share your work 
@@ -22,4 +22,4 @@ To run code yourself in Jupyter Notebook:
         e. Launch a jupyter notebook - this is an interactive notebook to run code and see the outputs inline
             Type 'jupyter notebook'
         f. Click on Create Spotify Playlist Using Python.ipynb to open the notebook and have fun!
-'''
+```
