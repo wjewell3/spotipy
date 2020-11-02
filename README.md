@@ -1,12 +1,12 @@
 # PyMuse
-Analyze your liked and/or disliked Spotify songs to create a dynamic, personalized playlist. 
+Analyze your Spotify top artists to create a dynamic, personalized playlist. 
 
 ## Prerequisite: 
 You must have a [Spotify account](https://accounts.spotify.com/en/login?continue=https).
 
-Go [here](https://spotify-playlist-290119.uc.r.appspot.com/) to easily create a Spotify playlist.
-
-Alternatively, follow the steps below to run the code yourself in a Jupyter Notebook!
+## Go [here](https://spotify-playlist-290119.uc.r.appspot.com/) to easily create a Spotify playlist or ...
+ 
+## Run the code yourself in a Jupyter Notebook! 
 
 1. [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if you don't already have it.
     - Use Git to save work at checkpoints and share your work 
