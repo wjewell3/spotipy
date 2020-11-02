@@ -9,7 +9,7 @@ You must have a [Spotify account](https://accounts.spotify.com/en/login?continue
 ### Run the code yourself in a Jupyter Notebook!
 
 1. [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
-    - Use Git to save work at checkpoints and share your work 
+- Use Git to save work at checkpoints and share your work 
 2. Open Terminal (Mac) or CMD (Windows)
     - Navigate to a folder on your machine where you want to download the Git repo (i.e. this project). 
         - E.g. If you want to download to your "Documents" folder:
