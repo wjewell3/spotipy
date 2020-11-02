@@ -26,4 +26,5 @@
     - Launch Jupyter Notebook 
         - A Jupyter Notebook is an interactive notebook to run code and see the outputs in-line
         - Type ```jupyter notebook```
-    - Click on "Create Spotify Playlist Using Python.ipynb" to open the notebook and have fun!
+    - Click on "Create Spotify Playlist Using Python.ipynb" to open the notebook
+ 3. Have fun!
