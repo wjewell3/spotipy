@@ -14,7 +14,7 @@ You must have a [Spotify account](https://accounts.spotify.com/en/login?continue
     - Navigate to a folder on your machine where you want to download the Git repo (i.e. this project). 
         - E.g. If you want to download to your "Documents" folder:
             - Type ```cd C:\Users\your_computer_name\Documents``` or ```cd /Users/your_computer_name/Downloads```
-    - Next install the Git repo into your chosen folder:
+    - Next install the Git repo:
         - Type ```git clone https://github.com/wjewell3/spotipy.git```
     - Install Python 3.7.3
         - Other versions may not work... but you may get lucky!
