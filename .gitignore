@@ -2,6 +2,7 @@
 .envrc
 .DS_Store
 .cache
+.cache-1254636534
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
