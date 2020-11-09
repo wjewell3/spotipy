@@ -2,7 +2,7 @@
 <b>Objective:</b> Use Python to analyze your Spotify Top Artists to create a dynamic, personalized playlist  
 <b>Audience:</b> Those interested in music and learning Python!  
 <b>Prerequisite:</b> You must have a [Spotify account](https://accounts.spotify.com/en/login?continue=https)
-<b>Version:</b> Beta (Please send feedback to jewell.will@gmail.com)
+<b>Last Revised:</b> Nov 8, 2020 (Still in Beta testing - Please send feedback to jewell.will@gmail.com)
 
 #### Go [here](https://spotify-playlist-290119.uc.r.appspot.com/) to create a Spotify playlist and then ...
  
