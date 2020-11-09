@@ -463,7 +463,7 @@ def create_playlist_(json, methods=['GET', 'POST']):
         liked_genre_count_df = get_genre_counts(genre_exploded_df)
         liked_song_df = establish_genre_score(liked_genre_count_df, liked_song_df)
     except:
-        pass
+        liked_genre_count_df = pd.DataFrame()
     printio('''****PART 3 of 5: Your "Disliked" Artists (if you have a 'Dislikes' playlist)****''')
     try:
         define_scope()
@@ -477,7 +477,7 @@ def create_playlist_(json, methods=['GET', 'POST']):
         disliked_genre_count_df['genre count'] = disliked_genre_count_df['genre count'] * -1
         disliked_song_df = establish_genre_score(disliked_genre_count_df, disliked_song_df)
     except:
-        pass
+        disliked_genre_count_df = pd.DataFrame()
     printio('')
     printio('****PART 4 of 5: Generate a genre score based on your (dis)liked artists***')
     genres = []
