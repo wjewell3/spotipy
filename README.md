@@ -12,6 +12,7 @@
     - Install <b>Python 3.7.3</b>
         - Windows/PCs: download Python 3.7.3 [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64-webinstall.exe)
             - <b>IMPORTANT:</b> Click the option to "Add Python 3.7 to PATH". If you miss this, you can always uninstall and reinstall.
+            - If you are experiencing difficulties from have another version of Python installed previously, check out the Stack Overflow article [here](https://stackoverflow.com/questions/5087831/how-should-i-set-default-python-version-in-windows)
             - Optional: If you want to manage multiple versions of Python on your Windows machine, check out pyenv-win [here](https://github.com/pyenv-win/pyenv-win)
         - Macs: check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
 
