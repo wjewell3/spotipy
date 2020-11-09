@@ -9,7 +9,7 @@
 
 1. Install Dependencies
     - Install Git [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-        - Please Note: you will navigate to a new webpage - just click back once you have Git installed
+        - Please Note: Clicking the link above will navigate you to a new webpage - just click back once you have Git installed
         - Use Git to save work at checkpoints and share your work 
     - Install <b>Python 3.7.3</b>
         - For Macs, check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
