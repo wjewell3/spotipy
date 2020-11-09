@@ -4,8 +4,6 @@
 <b>Prerequisite:</b> You must have a [Spotify account](https://accounts.spotify.com/en/login?continue=https)  
 <b>Last Revised:</b> Nov 8, 2020 (Still in Beta testing - Please send feedback to jewell.will@gmail.com)
 
-#### Go [here](https://spotify-playlist-290119.uc.r.appspot.com/) to create a Spotify playlist and then ...
- 
 ### Run the code yourself in a Jupyter Notebook!
 
 1. Install Dependencies
@@ -33,5 +31,3 @@
         - Type ```jupyter notebook```
             - Select your default browser if prompted.
     - Click on "Create Spotify Playlist Using Python.ipynb" to open the notebook
-
- 3. Have fun!
