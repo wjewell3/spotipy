@@ -8,7 +8,7 @@
 ### Run the code yourself in a Jupyter Notebook!
 
 1. Install Dependencies
-    - <a href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git" target="_blank">Install Git</a>.
+    - [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
         - Use Git to save work at checkpoints and share your work 
     - Install <b>Python 3.7.3</b>
         - For Macs, check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
