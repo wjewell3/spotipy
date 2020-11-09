@@ -14,14 +14,14 @@
     - Install <b>Python 3.7.3</b>
         - Macs: check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
         - Windows/PCs: download Python 3.7.3 [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64-webinstall.exe)
-            - IMPORTANT: Click on the option to add Python to PATH
+            - <b>IMPORTANT:</b> Click the option to "Add Python 3.7 to PATH". If you miss this, you can add it manually, or uninstall, and reinstall.
             - Optional: If you want to manage multiple versions of Python on your Windows machine, check out pyenv-win [here](https://github.com/pyenv-win/pyenv-win)
 2. Open Terminal (Mac) or CMD (Windows)
-    - Navigate to a folder on your machine where you want to download the Git repo (i.e. this project). 
+    - Navigate to a folder where you want to download the Git repo (i.e. this project). 
         - E.g. If you want to download to your "Documents" folder:
             - Windows: Type ```cd C:\Users\<INSERT YOUR COMPUTER NAME>\Documents``` 
             - Macs: Type ```cd /Users/<INSERT YOUR COMPUTER NAME>/Documents```
-            - 
+            - <b>Please Note</b>: Your path will probably be a little different, depending on your computer.
     - Install the Git repo:
         - Type ```git clone https://github.com/wjewell3/spotipy.git```
         - Step into the repo. Type ```cd spotipy``` (not ```cd spotify```)
