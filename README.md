@@ -8,11 +8,12 @@
 
 1. Install Dependencies
     - Install <b>Python 3.7.3</b>
-        - Macs: check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
         - Windows/PCs: download Python 3.7.3 [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64-webinstall.exe)
             - <b>IMPORTANT:</b> Click the option to "Add Python 3.7 to PATH". If you miss this, you can always uninstall and reinstall.
             - Optional: If you want to manage multiple versions of Python on your Windows machine, check out pyenv-win [here](https://github.com/pyenv-win/pyenv-win)
-    - Install Git [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+        - Macs: check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
+
+    - [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
         - Use Git to save work at checkpoints and share your work 
 
 2. Open Terminal (Mac) or CMD (Windows)
