@@ -9,7 +9,7 @@
 1. Install Dependencies
     - [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
         - Use Git to save work at checkpoints and share your work 
-    - (OPTIONAL) Install <b>Python 3.7.3</b>
+    - Install <b>Python 3.7.3</b>
         - Windows/PCs: download Python 3.7.3 [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64-webinstall.exe)
             - <b>IMPORTANT:</b> Click the option to "Add Python 3.7 to PATH". If you miss this, you can always uninstall and reinstall.
             - Optional: If you want to manage multiple versions of Python on your Windows machine, check out pyenv-win [here](https://github.com/pyenv-win/pyenv-win)
@@ -24,7 +24,7 @@
     - Install the Git repo:
         - Type ```git clone https://github.com/wjewell3/spotipy.git```
         - Step into the repo. Type ```cd spotipy``` (not ```cd spotify```)
-    - (OPTIONAL) Install the Python dependendencies
+    - Install the Python dependendencies
         - Type ```pip install -r requirements.txt```
         - Pip is Python's package installer. It is reading the packages to be installed from requirements.txt
     - Launch Jupyter Notebook 
