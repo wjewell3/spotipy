@@ -12,8 +12,9 @@
         - Please Note: Clicking the link above will navigate you to a new webpage - just click back once you have Git installed
         - Use Git to save work at checkpoints and share your work 
     - Install <b>Python 3.7.3</b>
-        - For Macs, check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
-        - For Windows/PCs, download Python 3.7.3 [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64-webinstall.exe), making sure to click the option to add Python to PATH (very important!!)
+        - Macs: check out the guide [here](https://opensource.com/article/19/5/python-3-default-mac)
+        - Windows/PCs: download Python 3.7.3 [here](https://www.python.org/ftp/python/3.7.3/python-3.7.3-amd64-webinstall.exe)
+            - IMPORTANT: Click on the option to add Python to PATH
             - Optional: If you want to manage multiple versions of Python on your Windows machine, check out pyenv-win [here](https://github.com/pyenv-win/pyenv-win)
 2. Open Terminal (Mac) or CMD (Windows)
     - Navigate to a folder on your machine where you want to download the Git repo (i.e. this project). 
