@@ -6,6 +6,7 @@ from flask_socketio import SocketIO, emit
 import spotipy
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyOAuth
+#import redis
 
 from config import CONFIG
 from datetime import datetime, timedelta
@@ -52,10 +53,12 @@ app = Flask(__name__)
 app.secret_key = 'blah'
 socketio = SocketIO(app, 
     transports=['polling','websocket'], 
-    async_mode=None, 
+    async_mode='eventlet', 
     engineio_logger=True,
     ping_interval = 10000, 
-    ping_timeout= 5000
+    ping_timeout= 30000,
+    async_handlers=True
+    #message_queue='redis://'
     )
 
 def messageReceived(methods=['GET', 'POST']):
@@ -176,9 +179,12 @@ def get_genres(df):
         if (i/100).is_integer():
             printio(f"{i}/{len(artist_uris)} parsed")
         request = req(url = f"https://api.spotify.com/v1/artists/{artist_uris[i]}",headers=headers)
-        artist = request['name']
+        # artist = request['name']
         genres = request['genres']
-        printio (f"{i}:{artist}:{genres}")
+        # try:
+        #     printio(f"{i}:{artist}:{genres}")
+        # except:
+        #     printio('skipping...')
         g.append(genres)
         socketio.sleep(0.1)
 
@@ -190,7 +196,7 @@ def get_genres(df):
 def explode_genres(df):
     genre_exploded_df = df.explode('genre list')
     
-    printio('genre_exploded_df')
+    #printio('genre_exploded_df')
     display(genre_exploded_df.head())
     return genre_exploded_df
 
@@ -212,7 +218,7 @@ def get_genre_counts(genre_exploded_df):
     # establish genre counts (which will determine score)
     genre_count_df = pd.DataFrame(genre_exploded_df['genre list'].value_counts()).reset_index()
     genre_count_df.columns = ['genre','genre count']
-    printio('genre_count_df.head()')
+    #printio('genre_count_df.head()')
     display(genre_count_df.head())
     return genre_count_df
 
@@ -308,6 +314,20 @@ def get_raw_featured_playlist_song_list(df):
             raw_featured_songs.extend(req(url,headers=headers)['items'])
 
     return raw_featured_songs
+
+def get_my_top_artists():
+    my_top_artists = req(url = 'https://api.spotify.com/v1/me/top/artists?limit=50',headers=headers)['items']
+    my_top_artists_df = pd.DataFrame(columns=['artist_uri','name','genre list'])
+
+    for i in range(len(my_top_artists)):
+        uri = my_top_artists[i]['uri']
+        name = my_top_artists[i]['name']
+        genres = my_top_artists[i]['genres']
+        printio(f"{name}:{genres}")
+        my_top_artists_df = my_top_artists_df.append(pd.DataFrame([[uri, name, genres]], columns = ['artist_uri','name', 'genre list']))
+    my_top_artists_exploded_genres_df = explode_genres(my_top_artists_df)
+    display(my_top_artists_exploded_genres_df.head())
+    return get_genre_counts(my_top_artists_exploded_genres_df)
 
 def create_playlist(pred_like_playlist_name, df):
     # create playlist
@@ -417,23 +437,34 @@ def create_playlist_(json, methods=['GET', 'POST']):
     #     genre_threshold = genre_score_thresh
     # except:
     #     genre_threshold = 5
-    printio(f"Your new playlist: {pred_like_playlist_name}")
+    # printio(f"genre threshold = {genre_threshold}")
+    # printio(f"featured playlist year = {featured_playlist_year} ({year_delta} years ago)")
+    printio(f"This script adds 'Spotify featured playlist' songs to your new playlist, {pred_like_playlist_name}, if they share genre(s) with your liked artists/songs")
+    printio('Last revised Sept. 28, 2020 by Will Jewell')
+    printio('Source code: https://github.com/wjewell3/spotipy')
+    printio('Still in beta testing - known issue: updates stop showing up on webpage even with script continuing to run')
+    define_scope()
     # printio(f"genre threshold = {genre_threshold}")
     # printio(f"featured playlist year = {featured_playlist_year} ({year_delta} years ago)")
 
     printio('Scope defined')
     printio('')
-    printio('****PART 1 of 4: Get Liked Songs Dataframe****')
-    raw_liked_song_list = get_raw_liked_song_list()
-    liked_song_df = song_metadata_to_df(raw_liked_song_list)
-    liked_song_df = add_audio_feats(liked_song_df)
-    genre_df = get_genres(liked_song_df)
-    genre_exploded_df = explode_genres(genre_df)
-    liked_song_df = add_genres(liked_song_df, genre_exploded_df)
-    liked_genre_count_df = get_genre_counts(genre_exploded_df)
-    liked_song_df = establish_genre_score(liked_genre_count_df, liked_song_df)
-    printio('')
-    printio('****PART 2 of 4: Get Disliked Songs Dataframe (if you have a Dislikes playlist)****')
+    
+    printio('''****PART 1 of 5: Your Spotify "Top Artists"****''')
+    my_top_artists_genre_count_df = get_my_top_artists()
+    printio('****PART 2 of 5: Your "Liked Songs" Artists (if you have liked (i.e. hearted) songs)****')
+    try:
+        raw_liked_song_list = get_raw_liked_song_list()
+        liked_song_df = song_metadata_to_df(raw_liked_song_list)
+        liked_song_df = add_audio_feats(liked_song_df)
+        genre_df = get_genres(liked_song_df)
+        genre_exploded_df = explode_genres(genre_df)
+        liked_song_df = add_genres(liked_song_df, genre_exploded_df)
+        liked_genre_count_df = get_genre_counts(genre_exploded_df)
+        liked_song_df = establish_genre_score(liked_genre_count_df, liked_song_df)
+    except:
+        liked_genre_count_df = pd.DataFrame()
+    printio('''****PART 3 of 5: Your "Disliked" Artists (if you have a 'Dislikes' playlist)****''')
     try:
         define_scope()
         raw_disliked_song_list = get_raw_disliked_song_list()
@@ -446,18 +477,15 @@ def create_playlist_(json, methods=['GET', 'POST']):
         disliked_genre_count_df['genre count'] = disliked_genre_count_df['genre count'] * -1
         disliked_song_df = establish_genre_score(disliked_genre_count_df, disliked_song_df)
     except:
-        pass
+        disliked_genre_count_df = pd.DataFrame()
     printio('')
-    printio('****PART 3 of 4: Create "my_songs" df using liked (and optionally disliked) songs***')
-    try:
-        my_songs_df = combine_dfs_to_create_my_songs_df(liked_song_df,disliked_song_df,'.')
-        genre_count_df = pd.concat([liked_genre_count_df, disliked_genre_count_df])
-    except:
-        my_songs_df = liked_song_df
-        genre_count_df = liked_genre_count_df
-    #my_songs_df = pd.read_pickle("./my_songs.pkl")
-    printio('')
-    printio('****PART 4 of 4: Get songs from featured playlists and score them based on genre****')
+    printio('****PART 4 of 5: Generate a genre score based on your (dis)liked artists***')
+    genres = []
+    for df in [my_top_artists_genre_count_df, liked_genre_count_df, disliked_genre_count_df]:
+        if df.shape[0]>0:
+            genres.append(df)
+    genre_count_df = pd.concat(genres)
+    printio('****PART 5 of 5: Applying genre score to featured playlist songs to create your new playlist****')
     printio(f"Creating featured playlist songs for: {(pd.Timestamp.now()-timedelta(days=0*365)).strftime('%Y-%m-%dT%H:%M:%S.%Z')}")
     playlist_df = get_featured_playlist_uris('US',(pd.Timestamp.now()-timedelta(days=0*365)).strftime('%Y-%m-%dT%H:%M:%S.%Z'))
     # printio(f"{display(playlist_df)}")
@@ -467,10 +495,14 @@ def create_playlist_(json, methods=['GET', 'POST']):
     genre_df = get_genres(featured_playlist_song_df)
     genre_exploded_df = explode_genres(genre_df)
     featured_playlist_song_df = add_genres(featured_playlist_song_df, genre_exploded_df)
-    featured_playlist_song_df = establish_genre_score(genre_count_df, featured_playlist_song_df)
-    create_playlist(pred_like_playlist_name, featured_playlist_song_df)
-    printio('')
+    # featured_playlist_song_df1 = establish_genre_score(genre_count_df, featured_playlist_song_df)
+    featured_playlist_song_df2 = establish_genre_score(genre_count_df, featured_playlist_song_df)
+    # union operation with pd.concat
+    # featured_playlist_song_df3 = pd.concat(featured_playlist_song_df1, featured_playlist_song_df2)
+    create_playlist(pred_like_playlist_name, featured_playlist_song_df2)
     printio('****Complete! Check Spotify to see if playlist was filled with songs.****')
+        
+    #my_songs_df = pd.read_pickle("./my_songs.pkl")
     return 'ok'
 
 if __name__ == '__main__':
